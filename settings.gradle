@@ -1,0 +1,4 @@
+rootProject.name = 'soup-language'
+include 'soup-core'
+include 'soup-fx'
+include 'soup-exemple'

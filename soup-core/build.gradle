@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'antlr'
+}
+
+group = 'fr.ensta'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    modularity.inferModulePath = true
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(23))
+    }
+}
+
+dependencies {
+    antlr group: 'org.antlr', name: 'antlr4', version: '4.13.2'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+generateGrammarSource {
+    outputDirectory = layout.buildDirectory.dir('generated-src/antlr/main/soup/parser').get().asFile
+    arguments = [
+            '-package', 'soup.parser',
+            '-Xexact-output-dir'
+    ]
+}
+
+/**
+ * the following is needed because [antlr plugin wiring bug](https://github.com/gradle/gradle/issues/25885#issue-1818904631)
+ * [workaround](https://github.com/gradle/gradle/issues/19555#issuecomment-1593252653)
+ */
+sourceSets.configureEach {
+    var generateGrammarSource = tasks.named(getTaskName("generate", "GrammarSource"))
+    java.srcDir(generateGrammarSource.map { files() })
+}
