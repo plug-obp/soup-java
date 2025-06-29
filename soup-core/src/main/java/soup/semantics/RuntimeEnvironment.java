@@ -1,21 +1,25 @@
 package soup.semantics;
 
-import soup.syntax.model.declarations.Soup;
+import soup.syntax.model.SyntaxTreeElement;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class RuntimeEnvironment {
-    Soup model;
+    SyntaxTreeElement model;
     Map<String, Object> environment = new HashMap<>();
 
-    public RuntimeEnvironment(Soup model) {
+    public RuntimeEnvironment(SyntaxTreeElement model) {
         this.model = model;
     }
     public RuntimeEnvironment(RuntimeEnvironment other) {
         this.model = other.model;
         this.environment = new HashMap<>(other.environment);
+    }
+    public RuntimeEnvironment(SyntaxTreeElement model, Map<String, Object> environment) {
+        this.model = model;
+        this.environment = environment;
     }
 
     public void define(String key, Object value) {

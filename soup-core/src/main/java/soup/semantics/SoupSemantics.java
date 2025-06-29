@@ -44,7 +44,8 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEn
 
     @Override
     public List<AnonymousPiece> actions(RuntimeEnvironment configuration) {
-        return configuration.model.pieces.stream().filter(
+        if (!(configuration.model instanceof Soup soup)) { return Collections.emptyList(); }
+        return soup.pieces.stream().filter(
                 piece -> {
                     var guard = piece.guard.accept(expressionInterpreter, configuration);
                     return expressionInterpreter.ensureBoolean("guard", guard);
@@ -59,7 +60,7 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEn
     }
 
     public SemanticRelation<AnonymousPiece, RuntimeEnvironment> pureSemantics() {
-        return new SemanticRelation<AnonymousPiece, RuntimeEnvironment>() {
+        return new SemanticRelation<>() {
             @Override
             public List<RuntimeEnvironment> initial() {
                 return SoupSemantics.this.initial();

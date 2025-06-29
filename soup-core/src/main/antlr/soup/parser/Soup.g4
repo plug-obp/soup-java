@@ -55,8 +55,7 @@ ENABLED: 'enabled';
 INPUT:'@';
 
 
-NUMBER: [+-]? NATURAL (DOT NATURAL)?;
-NATURAL: [0-9]+;
+
 
 NOT: '!';
 OR : '||' | 'or' | '∨';
@@ -94,6 +93,8 @@ RSQUARE : ']';
 PRIME: '\'';
 
 IDENTIFIER : [a-zA-Z][a-zA-Z_0-9]*;
+NUMBER: NATURAL (DOT NATURAL)?;
+NATURAL: [0-9]+;
 
 LINE_COMMENT : '//' .*? '\n' -> skip ;
 COMMENT : '/*' .*? '*/' -> skip ;

@@ -47,11 +47,7 @@ public class Antlr4ToModelTest {
             () -> assertEquals(BooleanLiteral.TRUE, Reader.readExpression("true")),
             () -> assertEquals(BooleanLiteral.FALSE, Reader.readExpression("false")),
             () -> assertEquals(new IntegerLiteral(23, Position.ZERO), Reader.readExpression("23")),
-            () -> assertEquals(new IntegerLiteral(23, Position.ZERO), Reader.readExpression("+23")),
-            () -> assertEquals(new IntegerLiteral(-23, Position.ZERO), Reader.readExpression("-23")),
-            () -> assertEquals(new DoubleLiteral(23.3, Position.ZERO), Reader.readExpression("23.3")),
-            () -> assertEquals(new DoubleLiteral(23.3, Position.ZERO), Reader.readExpression("+23.3")),
-            () -> assertEquals(new DoubleLiteral(-23.3, Position.ZERO), Reader.readExpression("-23.3"))
+            () -> assertEquals(new DoubleLiteral(23.3, Position.ZERO), Reader.readExpression("23.3"))
         );
     }
 
@@ -72,12 +68,17 @@ public class Antlr4ToModelTest {
                 , Reader.readExpression("!true"));
         assertEquals(
                 new MinusExpression(
-                            new IntegerLiteral(-23, Position.ZERO),
+                    new MinusExpression(
+                            new IntegerLiteral(23, Position.ZERO),
                             Position.ZERO),
+                    Position.ZERO),
                 Reader.readExpression("--23"));
         assertEquals(
                 new PlusExpression(
-                        new IntegerLiteral(-23, Position.ZERO),
+                        new MinusExpression(
+                            new IntegerLiteral(23, Position.ZERO),
+                            Position.ZERO
+                        ),
                         Position.ZERO),
                 Reader.readExpression("+-23"));
         assertEquals(

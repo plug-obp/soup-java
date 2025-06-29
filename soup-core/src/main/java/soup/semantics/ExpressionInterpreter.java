@@ -1,7 +1,9 @@
 package soup.semantics;
 
+import soup.syntax.Reader;
 import soup.syntax.model.FunctionalVisitorBase;
 import soup.syntax.model.expressions.ConditionalExpression;
+import soup.syntax.model.expressions.Expression;
 import soup.syntax.model.expressions.Reference;
 import soup.syntax.model.expressions.binary.arithmetic.*;
 import soup.syntax.model.expressions.binary.propositional.*;
@@ -14,7 +16,19 @@ import soup.syntax.model.expressions.unary.NotExpression;
 import soup.syntax.model.expressions.unary.ParenExpression;
 import soup.syntax.model.expressions.unary.PlusExpression;
 
+import java.util.Map;
+
 public class ExpressionInterpreter extends FunctionalVisitorBase<RuntimeEnvironment, Object> {
+
+    public static Object evaluate(Expression expression, Map<String, Object> environment) {
+        var runtimeEnvironment = new RuntimeEnvironment(expression, environment);
+        return expression.accept(new ExpressionInterpreter(), runtimeEnvironment);
+    }
+
+    public static Object evaluate(String expression, Map<String, Object> environment) throws Exception {
+        var model = Reader.readExpression(expression);
+        return evaluate(model, environment);
+    }
 
     @Override
     public Object visit(BooleanLiteral node, RuntimeEnvironment environment) {
@@ -53,6 +67,9 @@ public class ExpressionInterpreter extends FunctionalVisitorBase<RuntimeEnvironm
     double ensureDouble(String operator, Object value) {
         if (value instanceof Double) {
             return (double) value;
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).doubleValue();
         }
         throw new UnsupportedOperationException(operator + " expected a double but got " + value);
     }
@@ -95,6 +112,7 @@ public class ExpressionInterpreter extends FunctionalVisitorBase<RuntimeEnvironm
     public Object visit(Multiplication node, RuntimeEnvironment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
+
         try {
             var leftV = ensureInteger(node.operator, left);
             var rightV = ensureInteger(node.operator, right);
