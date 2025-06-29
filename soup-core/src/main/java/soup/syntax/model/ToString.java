@@ -173,8 +173,8 @@ public class ToString implements FunctionalVisitor<Void, String>{
     @Override
     public String visit(ConditionalExpression node, Void input) {
         return      node.condition.accept(this, input)
-            + "?" + node.thenExpression.accept(this, input)
-            + ":" + node.elseExpression.accept(this, input);
+            + " ? " + node.thenExpression.accept(this, input)
+            + " : " + node.elseExpression.accept(this, input);
     }
 
     @Override
@@ -204,12 +204,12 @@ public class ToString implements FunctionalVisitor<Void, String>{
 
     @Override
     public String visit(AnonymousPiece node, Void input) {
-        return "["+node.guard.accept(this, input) +"]/" + node.effect.accept(this, input);
+        return "[ "+node.guard.accept(this, input) +" ]/" + node.effect.accept(this, input);
     }
 
     @Override
     public String visit(NamedPiece node, Void input) {
-        return node.name + "≜" + visit((AnonymousPiece) node, input);
+        return node.name + " ≜ " + visit((AnonymousPiece) node, input);
     }
 
     @Override
@@ -222,12 +222,12 @@ public class ToString implements FunctionalVisitor<Void, String>{
         var vars = node.variables
                 .stream()
                 .map(vd -> vd.name + " = " + vd.initial.accept(this, input))
-                .collect(Collectors.joining("; "));
+                .collect(Collectors.joining(";\n\t"));
         var pieces = node.pieces
                 .stream()
                 .map(p -> p.accept(this, input))
-                .collect(Collectors.joining(";\n"));
-        return vars + " " + pieces;
+                .collect(Collectors.joining("\n|"));
+        return "var\n\t" + vars + "\n" + pieces;
     }
 
     @Override
@@ -242,7 +242,7 @@ public class ToString implements FunctionalVisitor<Void, String>{
 
     @Override
     public String visit(EnabledExpression node, Void input) {
-        return "enabled (" + node.operand.accept(this, input) + ")";
+        return "enabled " + node.operand.accept(this, input);
     }
 
     @Override

@@ -8,7 +8,15 @@ import soup.parser.SoupParser;
 import soup.syntax.model.Cursor;
 import soup.syntax.model.Position;
 import soup.syntax.model.SyntaxTreeElement;
+import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.declarations.VariableDeclaration;
+import soup.syntax.model.declarations.pieces.AnonymousPiece;
+import soup.syntax.model.declarations.pieces.NamedPiece;
+import soup.syntax.model.dependent.EnabledExpression;
+import soup.syntax.model.dependent.InputReference;
+import soup.syntax.model.dependent.NamedPieceReference;
+import soup.syntax.model.dependent.PrimedReference;
+import soup.syntax.model.expressions.ConditionalExpression;
 import soup.syntax.model.expressions.Expression;
 import soup.syntax.model.expressions.Reference;
 import soup.syntax.model.expressions.binary.arithmetic.*;
@@ -21,8 +29,12 @@ import soup.syntax.model.expressions.unary.MinusExpression;
 import soup.syntax.model.expressions.unary.NotExpression;
 import soup.syntax.model.expressions.unary.ParenExpression;
 import soup.syntax.model.expressions.unary.PlusExpression;
+import soup.syntax.model.statements.*;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Antrl4ToSyntax extends SoupBaseListener {
     ParseTreeProperty<Object> model = new ParseTreeProperty<>();
@@ -141,6 +153,143 @@ public class Antrl4ToSyntax extends SoupBaseListener {
             case SoupParser.EQUIVALENCE -> new Equivalence(ctx.operator.getText(), left, right, getPosition(ctx));
             default -> null;
         };
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitConditionalExp(SoupParser.ConditionalExpContext ctx) {
+        var condition = get(ctx.expression(0), Expression.class);
+        var thenExpression = get(ctx.expression(1), Expression.class);
+        var elseExpression = get(ctx.expression(2), Expression.class);
+        var node = new ConditionalExpression(condition, thenExpression, elseExpression, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitAssign(SoupParser.AssignContext ctx) {
+        var target = new Reference<VariableDeclaration>(ctx.IDENTIFIER().getText(), getPosition(ctx));
+        var expression = get(ctx.expression(), Expression.class);
+        var node = new Assignment(target, expression, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitAssignStatement(SoupParser.AssignStatementContext ctx) {
+        model.put(ctx, get(ctx.assign(), Statement.class));
+    }
+
+    @Override
+    public void exitIfStatement(SoupParser.IfStatementContext ctx) {
+        var condition = get(ctx.expression(), Expression.class);
+        var thenStmt = get(ctx.statement(0), Statement.class);
+        var elseStmt = get(ctx.statement(1), Statement.class);
+        var node = elseStmt == null ?
+                  new IfStatement(condition, thenStmt, Skip.INSTANCE, getPosition(ctx))
+                : new IfStatement(condition, thenStmt, elseStmt, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitSequenceStatement(SoupParser.SequenceStatementContext ctx) {
+        var left = get(ctx.statement(0), Statement.class);
+        var right = get(ctx.statement(1), Statement.class);
+        var node = new Sequence(left, right, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitAnonymousPiece(SoupParser.AnonymousPieceContext ctx) {
+        var guard = get(ctx.guard(), Expression.class);
+        var effect = get(ctx.effect(), Statement.class);
+        var node = new AnonymousPiece(
+                guard != null ? guard : BooleanLiteral.TRUE,
+                effect,
+                getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitGuard(SoupParser.GuardContext ctx) {
+        model.put(ctx, get(ctx.expression(), Expression.class));
+    }
+
+    @Override
+    public void exitEffect(SoupParser.EffectContext ctx) {
+        model.put(ctx, get(ctx.statement(), Statement.class));
+    }
+
+    @Override
+    public void exitNamedPiece(SoupParser.NamedPieceContext ctx) {
+        var name = ctx.IDENTIFIER().getText();
+        var guard = get(ctx.guard(), Expression.class);
+        var effect = get(ctx.effect(), Statement.class);
+        var node = new NamedPiece(
+                name,
+                guard != null ? guard :BooleanLiteral.TRUE,
+                effect != null ? effect : Skip.INSTANCE,
+                getPosition(ctx)
+        );
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitVariables(SoupParser.VariablesContext ctx) {
+        var variables = ctx.assign().stream().map(assignCtx -> {
+            var assign = get(assignCtx, Assignment.class);
+            var node = new VariableDeclaration(assign.target.name, assign.expression, getPosition(assignCtx));
+            positions.put(node, getPosition(ctx));
+            return node;
+        }).toList();
+        model.put(ctx, variables);
+    }
+
+    @Override
+    public void exitSoup(SoupParser.SoupContext ctx) {
+        var variables = (List<VariableDeclaration>)model.get(ctx.variables());
+        var pieces = ctx.piece()
+                .stream()
+                .map(pieceContext -> get(pieceContext, AnonymousPiece.class))
+                .toList();
+        var node = new Soup(variables == null ? Collections.emptyList() : variables, pieces, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitInputReferenceExp(SoupParser.InputReferenceExpContext ctx) {
+        var expression = get(ctx.expression(), Expression.class);
+        var node = new InputReference(expression, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitPrimedReferenceExp(SoupParser.PrimedReferenceExpContext ctx) {
+        var name = ctx.IDENTIFIER().getText();
+        var node = new PrimedReference(name, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitNamedPieceReferenceExp(SoupParser.NamedPieceReferenceExpContext ctx) {
+        var name = ctx.IDENTIFIER().getText();
+        var node = new NamedPieceReference(name, getPosition(ctx));
+        model.put(ctx, node);
+        positions.put(node, getPosition(ctx));
+    }
+
+    @Override
+    public void exitEnabledExp(SoupParser.EnabledExpContext ctx) {
+        var expression = get(ctx.expression(), Expression.class);
+        var node = new EnabledExpression(expression, getPosition(ctx));
         model.put(ctx, node);
         positions.put(node, getPosition(ctx));
     }

@@ -2,6 +2,7 @@ package soup.syntax;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -53,7 +54,16 @@ public class Reader {
 
     public static <T extends SyntaxTreeElement> T read(java.io.Reader input, Class<T> type) throws IOException, ParseException {
         var parser = parser(input);
-        var tree = parser.expression();
+        ParserRuleContext tree = null;
+        if (type.isAssignableFrom(Expression.class)) {
+            tree = parser.expression();
+        } else if (type.isAssignableFrom(Statement.class)) {
+            tree = parser.statement();
+        } else if (type.isAssignableFrom(AnonymousPiece.class)) {
+            tree = parser.piece();
+        } else {
+            tree = parser.soup();
+        }
         if (parser.getCurrentToken().getType() != Token.EOF) {
             throw new ParseException("EOF expected", parser.getCurrentToken().getStartIndex());
         }
@@ -71,5 +81,15 @@ public class Reader {
         var builder = new Antrl4ToSyntax();
         ParseTreeWalker.DEFAULT.walk(builder, tree);
         return builder.get(tree, type);
+    }
+
+    public static <T extends SyntaxTreeElement> T link(T model) {
+        model.accept(new Linker(), new Environment());
+        return model;
+    }
+
+    public static <T extends SyntaxTreeElement> T link(T model, Environment environment) {
+        model.accept(new Linker(), environment);
+        return model;
     }
 }
