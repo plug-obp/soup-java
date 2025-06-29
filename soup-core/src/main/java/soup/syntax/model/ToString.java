@@ -19,10 +19,7 @@ import soup.syntax.model.expressions.literals.BooleanLiteral;
 import soup.syntax.model.expressions.literals.DoubleLiteral;
 import soup.syntax.model.expressions.literals.IntegerLiteral;
 import soup.syntax.model.expressions.literals.Literal;
-import soup.syntax.model.expressions.unary.MinusExpression;
-import soup.syntax.model.expressions.unary.NotExpression;
-import soup.syntax.model.expressions.unary.PlusExpression;
-import soup.syntax.model.expressions.unary.UnaryExpression;
+import soup.syntax.model.expressions.unary.*;
 import soup.syntax.model.statements.*;
 
 import java.util.stream.Collectors;
@@ -81,6 +78,11 @@ public class ToString implements FunctionalVisitor<Void, String>{
     @Override
     public String visit(MinusExpression node, Void input) {
         return visit((UnaryExpression) node, input);
+    }
+
+    @Override
+    public String visit(ParenExpression node, Void input) {
+        return "(" + node.operand.accept(this, input) + ")";
     }
 
     @Override

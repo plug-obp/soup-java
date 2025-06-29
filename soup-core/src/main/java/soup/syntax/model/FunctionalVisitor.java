@@ -19,10 +19,7 @@ import soup.syntax.model.expressions.literals.BooleanLiteral;
 import soup.syntax.model.expressions.literals.DoubleLiteral;
 import soup.syntax.model.expressions.literals.IntegerLiteral;
 import soup.syntax.model.expressions.literals.Literal;
-import soup.syntax.model.expressions.unary.MinusExpression;
-import soup.syntax.model.expressions.unary.NotExpression;
-import soup.syntax.model.expressions.unary.PlusExpression;
-import soup.syntax.model.expressions.unary.UnaryExpression;
+import soup.syntax.model.expressions.unary.*;
 import soup.syntax.model.statements.*;
 
 public interface FunctionalVisitor<I, O> {
@@ -37,6 +34,7 @@ public interface FunctionalVisitor<I, O> {
     O visit(NotExpression node, I input);
     O visit(PlusExpression node, I input);
     O visit(MinusExpression node, I input);
+    O visit(ParenExpression node, I input);
     O visit(BinaryExpression node, I input);
     O visit(Multiplication node, I input);
     O visit(Division node, I input);

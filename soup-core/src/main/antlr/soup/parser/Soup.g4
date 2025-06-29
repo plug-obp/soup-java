@@ -26,6 +26,8 @@ expression
     | expression operator=(BEQ | NEQ) expression                #BinaryExpression
     | expression operator=AND expression                        #BinaryExpression
     | expression operator=OR expression                         #BinaryExpression
+    | expression operator=XOR expression                                              #BinaryExpression
+    |<assoc=right> expression operator=(IMPLICATION | EQUIVALENCE) expression         #BinaryExpression
     | <assoc=right> expression '?' expression ':' expression    #ConditionalExp
     ;
 
@@ -52,7 +54,7 @@ VAR: 'var';
 ENABLED: 'enabled';
 INPUT:'@';
 
-IDENTIFIER : [a-zA-Z][a-zA-Z_0-9]*;
+
 NUMBER: [+-]? NATURAL (DOT NATURAL)?;
 NATURAL: [0-9]+;
 
@@ -61,7 +63,9 @@ OR : '||' | 'or' | '∨';
 AND: '&&' | 'and' | '∧';
 NOR: 'nor';
 NAND: 'nand';
-XOR: 'xor' | '^';
+XOR: 'xor' | '^' | '⊻' | '⊕';
+IMPLICATION: 'implies' | '->' | '=>' | '→' | '⟹';
+EQUIVALENCE: 'iff' | '<->' | '<=>' | '⟺' | '↔';
 PLUS : '+';
 MINUS : '-';
 SHL: '<<';
@@ -76,7 +80,6 @@ GT : '>';
 BEQ : '==';
 EQ : '=';
 NEQ : '!=' | '≠';
-IFF: '<=>' | '⟺';
 
 PIPE: '|';
 COMMA: ',';
@@ -89,6 +92,8 @@ RPAREN : ')';
 LSQUARE : '[';
 RSQUARE : ']';
 PRIME: '\'';
+
+IDENTIFIER : [a-zA-Z][a-zA-Z_0-9]*;
 
 LINE_COMMENT : '//' .*? '\n' -> skip ;
 COMMENT : '/*' .*? '*/' -> skip ;
