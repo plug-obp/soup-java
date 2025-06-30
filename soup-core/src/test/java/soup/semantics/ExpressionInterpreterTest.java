@@ -136,4 +136,126 @@ public class ExpressionInterpreterTest {
         assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("false-23", Collections.emptyMap()));
         assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("false-true", Collections.emptyMap()));
     }
+
+    //test <
+    @Test
+    void testBinaryLT() throws Exception {
+        assertEquals(false, ExpressionInterpreter.evaluate("42<23", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("23<42", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("23<23", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true<42", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("42<false", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true<false", Collections.emptyMap()));
+    }
+    //test <=
+    @Test
+    void testBinaryLE() throws Exception {
+        assertEquals(false, ExpressionInterpreter.evaluate("42<=23", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("23<=42", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("23<=23", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true<=42", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("42<=false", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true<=false", Collections.emptyMap()));
+    }
+    //test >
+    @Test
+    void testBinaryGT() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("42>23", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("23>42", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("23>23", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true>42", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("42>false", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true>false", Collections.emptyMap()));
+    }
+    //test >=
+    @Test
+    void testBinaryGE() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("42>=23", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("23>=42", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("23>=23", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true>=42", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("42>=false", Collections.emptyMap()));
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true>=false", Collections.emptyMap()));
+    }
+    //test ==
+    @Test
+    void testBinaryEQ() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("true==true", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("42==42", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("42.0==42.0", Collections.emptyMap()));
+
+        assertEquals(false, ExpressionInterpreter.evaluate("true==false", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("42==23", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("42==42.0", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("42.0==23.0", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("42==true", Collections.emptyMap()));
+    }
+    //test !=
+    @Test
+    void testBinaryNEQ() throws Exception {
+        assertEquals(false, ExpressionInterpreter.evaluate("true!=true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("42!=42", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("42.0!=42.0", Collections.emptyMap()));
+
+        assertEquals(true, ExpressionInterpreter.evaluate("true!=false", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("42!=23", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("42!=42.0", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("42.0!=23.0", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("42!=true", Collections.emptyMap()));
+    }
+
+    //test &&
+    @Test
+    void testAnd() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("true&&true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("true&&false", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("false&&true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("false&&false", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true&&23", Collections.emptyMap()));
+    }
+    //test ||
+    @Test
+    void testOR() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("true||true", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("true||false", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("false||true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("false||false", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true&&23", Collections.emptyMap()));
+    }
+    //test XOR
+    @Test
+    void testXOR() throws Exception {
+        assertEquals(false, ExpressionInterpreter.evaluate("true xor true", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("true xor false", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("false xor true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("false xor false", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true&&23", Collections.emptyMap()));
+    }
+    //test ->
+    @Test
+    void testImp() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("true -> true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("true -> false", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("false -> true", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("false -> false", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true&&23", Collections.emptyMap()));
+    }
+    //test <->
+    @Test
+    void testEquiv() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("true <-> true", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("true <-> false", Collections.emptyMap()));
+        assertEquals(false, ExpressionInterpreter.evaluate("false <-> true", Collections.emptyMap()));
+        assertEquals(true, ExpressionInterpreter.evaluate("false <-> false", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true&&23", Collections.emptyMap()));
+    }
 }
