@@ -258,4 +258,23 @@ public class ExpressionInterpreterTest {
 
         assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("true&&23", Collections.emptyMap()));
     }
+
+    @Test
+    void testCondExp() throws Exception {
+        assertEquals(true, ExpressionInterpreter.evaluate("true ? true : 23", Collections.emptyMap()));
+        assertEquals(23, ExpressionInterpreter.evaluate("false ? true : 23", Collections.emptyMap()));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("42 ? false : 23", Collections.emptyMap()));
+    }
+
+    @Test
+    void testRef() throws Exception {
+        assertEquals(2, ExpressionInterpreter.evaluate("x + 1", Map.of("x", 1, "y", 2)));
+        assertEquals(3, ExpressionInterpreter.evaluate("x + y", Map.of("x", 1, "y", 2)));
+
+        assertEquals(3, ExpressionInterpreter.evaluate("x ? y + 1 : 42", Map.of("x", true, "y", 2)));
+        assertEquals(42, ExpressionInterpreter.evaluate("x ? y + 1 : 42", Map.of("x", false, "y", 2)));
+
+        assertThrows(RuntimeException.class, () -> ExpressionInterpreter.evaluate("x + z", Map.of("x", 1, "y", 2)));
+    }
 }
