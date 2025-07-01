@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEnvironment> {
+public class SoupSemantics implements SemanticRelation<AnonymousPiece, Environment> {
     Soup model;
     ExpressionSemantics expressionSemantics;
     StatementSemantics statementSemantics;
@@ -32,18 +32,18 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEn
     }
 
     @Override
-    public List<RuntimeEnvironment> initial() {
-        var runtimeEnvironment = new RuntimeEnvironment(model);
+    public List<Environment> initial() {
+        var environment = new Environment(model);
         for (var variable : model.variables) {
-            runtimeEnvironment.define(
+            environment.define(
                     variable.name,
-                    variable.initial.accept(expressionSemantics, runtimeEnvironment));
+                    expressionSemantics.evaluate(variable.initial, environment));
         }
-        return Collections.singletonList(runtimeEnvironment);
+        return Collections.singletonList(environment);
     }
 
     @Override
-    public List<AnonymousPiece> actions(RuntimeEnvironment configuration) {
+    public List<AnonymousPiece> actions(Environment configuration) {
         if (!(configuration.model instanceof Soup soup)) { return Collections.emptyList(); }
         return soup.pieces.stream().filter(
                 piece -> {
@@ -53,27 +53,27 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEn
     }
 
     @Override
-    public List<RuntimeEnvironment> execute(AnonymousPiece action, RuntimeEnvironment configuration) {
+    public List<Environment> execute(AnonymousPiece action, Environment configuration) {
         return Collections.singletonList(
-                action.effect.accept(statementSemantics, configuration)
+                statementSemantics.evaluate(action.effect, configuration)
         );
     }
 
-    public SemanticRelation<AnonymousPiece, RuntimeEnvironment> pureSemantics() {
+    public SemanticRelation<AnonymousPiece, Environment> pureSemantics() {
         return new SemanticRelation<>() {
             @Override
-            public List<RuntimeEnvironment> initial() {
+            public List<Environment> initial() {
                 return SoupSemantics.this.initial();
             }
 
             @Override
-            public List<AnonymousPiece> actions(RuntimeEnvironment configuration) {
+            public List<AnonymousPiece> actions(Environment configuration) {
                 return SoupSemantics.this.actions(configuration);
             }
 
             @Override
-            public List<RuntimeEnvironment> execute(AnonymousPiece action, RuntimeEnvironment configuration) {
-                var runtimeEnvironment = new RuntimeEnvironment(configuration);
+            public List<Environment> execute(AnonymousPiece action, Environment configuration) {
+                var runtimeEnvironment = new Environment(configuration);
                 return SoupSemantics.this.execute(action, runtimeEnvironment);
             }
         };

@@ -6,14 +6,20 @@ import soup.syntax.model.declarations.pieces.NamedPiece;
 
 import java.util.Objects;
 
-public class StepRuntimeEnvironment extends RuntimeEnvironment {
+public class StepEnvironment extends Environment {
     MaybeStutter<AnonymousPiece> action;
-    RuntimeEnvironment target;
+    Environment target;
 
-    public StepRuntimeEnvironment(RuntimeEnvironment source, MaybeStutter<AnonymousPiece> action, RuntimeEnvironment target) {
+    public StepEnvironment(Environment source, MaybeStutter<AnonymousPiece> action, Environment target) {
         super(source);
         this.action = action;
         this.target = target;
+    }
+
+    public StepEnvironment(StepEnvironment base) {
+        super(base);
+        this.action = base.action;
+        this.target = new Environment(base.target);
     }
 
     public Object targetLookup(String key) {
@@ -41,7 +47,7 @@ public class StepRuntimeEnvironment extends RuntimeEnvironment {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof StepRuntimeEnvironment that)) return false;
+        if (!(o instanceof StepEnvironment that)) return false;
         if (!super.equals(o)) return false;
         return Objects.equals(action, that.action) && Objects.equals(target, that.target);
     }

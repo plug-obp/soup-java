@@ -18,11 +18,11 @@ import soup.syntax.model.expressions.unary.PlusExpression;
 
 import java.util.Map;
 
-public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironment, Object> {
+public class ExpressionSemantics extends FunctionalVisitorBase<Environment, Object> {
 
     public static Object evaluate(Expression expression, Map<String, Object> environment) {
-        var runtimeEnvironment = new RuntimeEnvironment(expression, environment);
-        return expression.accept(new ExpressionSemantics(), runtimeEnvironment);
+        var runtimeEnvironment = new Environment(expression, environment);
+        return new ExpressionSemantics().evaluate(expression, runtimeEnvironment);
     }
 
     public static Object evaluate(String expression, Map<String, Object> environment) throws Exception {
@@ -30,23 +30,27 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
         return evaluate(model, environment);
     }
 
+    public Object evaluate(Expression expression, Environment environment) {
+        return expression.accept(this, environment);
+    }
+
     @Override
-    public Object visit(BooleanLiteral node, RuntimeEnvironment environment) {
+    public Object visit(BooleanLiteral node, Environment environment) {
         return node.value;
     }
 
     @Override
-    public Object visit(IntegerLiteral node, RuntimeEnvironment environment) {
+    public Object visit(IntegerLiteral node, Environment environment) {
         return node.value;
     }
 
     @Override
-    public Object visit(DoubleLiteral node, RuntimeEnvironment environment) {
+    public Object visit(DoubleLiteral node, Environment environment) {
         return node.value;
     }
 
     @Override
-    public Object visit(Reference node, RuntimeEnvironment environment) {
+    public Object visit(Reference node, Environment environment) {
         return environment.lookup(node.name);
     }
 
@@ -75,14 +79,14 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(NotExpression node, RuntimeEnvironment environment) {
+    public Object visit(NotExpression node, Environment environment) {
         var operand = node.operand.accept(this, environment);
         var booleanValue = ensureBoolean(node.operator, operand);
         return !booleanValue;
     }
 
     @Override
-    public Object visit(MinusExpression node, RuntimeEnvironment environment) {
+    public Object visit(MinusExpression node, Environment environment) {
         var operand = node.operand.accept(this, environment);
         try {
             var intValue = ensureInteger(node.operator, operand);
@@ -94,7 +98,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(PlusExpression node, RuntimeEnvironment environment) {
+    public Object visit(PlusExpression node, Environment environment) {
         var operand = node.operand.accept(this, environment);
         try {
             return ensureInteger(node.operator, operand);
@@ -104,12 +108,12 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(ParenExpression node, RuntimeEnvironment environment) {
+    public Object visit(ParenExpression node, Environment environment) {
         return node.operand.accept(this, environment);
     }
 
     @Override
-    public Object visit(Multiplication node, RuntimeEnvironment environment) {
+    public Object visit(Multiplication node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -125,7 +129,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Division node, RuntimeEnvironment environment) {
+    public Object visit(Division node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -141,7 +145,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Modulus node, RuntimeEnvironment environment) {
+    public Object visit(Modulus node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -157,7 +161,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Addition node, RuntimeEnvironment environment) {
+    public Object visit(Addition node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -173,7 +177,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Substraction node, RuntimeEnvironment environment) {
+    public Object visit(Substraction node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -189,7 +193,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(LessThan node, RuntimeEnvironment environment) {
+    public Object visit(LessThan node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -205,7 +209,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(LessThanOrEqual node, RuntimeEnvironment environment) {
+    public Object visit(LessThanOrEqual node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -221,7 +225,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(GreaterThan node, RuntimeEnvironment environment) {
+    public Object visit(GreaterThan node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -237,7 +241,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(GreaterThanOrEqual node, RuntimeEnvironment environment) {
+    public Object visit(GreaterThanOrEqual node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
 
@@ -253,21 +257,21 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Equal node, RuntimeEnvironment environment) {
+    public Object visit(Equal node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         return left.equals(right);
     }
 
     @Override
-    public Object visit(NotEqual node, RuntimeEnvironment environment) {
+    public Object visit(NotEqual node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         return !left.equals(right);
     }
 
     @Override
-    public Object visit(Conjunction node, RuntimeEnvironment environment) {
+    public Object visit(Conjunction node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         var leftV = ensureBoolean(node.operator, left);
@@ -276,7 +280,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Disjunction node, RuntimeEnvironment environment) {
+    public Object visit(Disjunction node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         var leftV = ensureBoolean(node.operator, left);
@@ -285,7 +289,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Implication node, RuntimeEnvironment environment) {
+    public Object visit(Implication node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         var leftV = ensureBoolean(node.operator, left);
@@ -294,7 +298,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(Equivalence node, RuntimeEnvironment environment) {
+    public Object visit(Equivalence node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         var leftV = ensureBoolean(node.operator, left);
@@ -303,7 +307,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(ExclusiveDisjunction node, RuntimeEnvironment environment) {
+    public Object visit(ExclusiveDisjunction node, Environment environment) {
         var left = node.left.accept(this, environment);
         var right = node.right.accept(this, environment);
         var leftV = ensureBoolean(node.operator, left);
@@ -312,7 +316,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironmen
     }
 
     @Override
-    public Object visit(ConditionalExpression node, RuntimeEnvironment environment) {
+    public Object visit(ConditionalExpression node, Environment environment) {
         var cond = node.condition.accept(this, environment);
         var condV = ensureBoolean("?:", cond);
         if (condV) {

@@ -6,19 +6,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class RuntimeEnvironment {
+public class Environment {
     SyntaxTreeElement model;
     Map<String, Object> environment = new HashMap<>();
 
-    public RuntimeEnvironment(SyntaxTreeElement model) {
+    public Environment() {}
+    public Environment(SyntaxTreeElement model) {
         this.model = model;
     }
-    public RuntimeEnvironment(RuntimeEnvironment other) {
+    public Environment(Environment other) {
         if (other == null) { return; }
         this.model = other.model;
         this.environment = new HashMap<>(other.environment);
     }
-    public RuntimeEnvironment(SyntaxTreeElement model, Map<String, Object> environment) {
+    public Environment(SyntaxTreeElement model, Map<String, Object> environment) {
         this.model = model;
         this.environment = environment;
     }
@@ -48,7 +49,7 @@ public class RuntimeEnvironment {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RuntimeEnvironment that)) return false;
+        if (!(o instanceof Environment that)) return false;
         return Objects.equals(model, that.model) && Objects.equals(environment, that.environment);
     }
 

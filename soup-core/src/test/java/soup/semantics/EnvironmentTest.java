@@ -4,18 +4,17 @@ import obp3.sli.core.MaybeStutter;
 import org.junit.jupiter.api.Test;
 import soup.syntax.model.expressions.literals.BooleanLiteral;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class RuntimeEnvironmentTest {
+public class EnvironmentTest {
 
     @Test
     void testEqualsRE() throws Exception {
-        var e1 = new RuntimeEnvironment(null, Map.of("x", 23));
-        var e2 = new RuntimeEnvironment(null, Map.of("x", 23));
+        var e1 = new Environment(null, Map.of("x", 23));
+        var e2 = new Environment(null, Map.of("x", 23));
 
         assertEquals(e1, e2);
 
@@ -31,10 +30,10 @@ public class RuntimeEnvironmentTest {
 
     @Test
     void testEqualsSRE() throws Exception {
-        var e1 = new RuntimeEnvironment(null, Map.of("x", 23));
-        var e2 = new RuntimeEnvironment(null, Map.of("x", 23));
-        var se1 = new StepRuntimeEnvironment(e1, MaybeStutter.stutter(), e2);
-        var se2 = new StepRuntimeEnvironment(e1, MaybeStutter.stutter(), e2);
+        var e1 = new Environment(null, Map.of("x", 23));
+        var e2 = new Environment(null, Map.of("x", 23));
+        var se1 = new StepEnvironment(e1, MaybeStutter.stutter(), e2);
+        var se2 = new StepEnvironment(e1, MaybeStutter.stutter(), e2);
 
         assertEquals(se1, se2);
         se1.model = BooleanLiteral.TRUE;

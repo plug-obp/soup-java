@@ -12,7 +12,7 @@ public class StatementSemanticsTest {
 
     @Test
     public void assign() throws Exception {
-        var env0 = new RuntimeEnvironment(
+        var env0 = new Environment(
                 Reader.readStatement("x=42"),
                 new HashMap<>(Map.of("x", 23)));
 
@@ -34,7 +34,7 @@ public class StatementSemanticsTest {
 
     @Test
     void testIfStmt() throws Exception {
-        var env0 = new RuntimeEnvironment(Reader.readStatement("if x < 42 then x = 42"), new HashMap<>(Map.of("x", 23)));
+        var env0 = new Environment(Reader.readStatement("if x < 42 then x = 42"), new HashMap<>(Map.of("x", 23)));
         StatementSemantics.evaluate(env0);
         assertEquals(42, env0.lookup("x"));
         env0.model = Reader.readStatement("if x < 42 then x = 52 else x = 23");
@@ -47,7 +47,7 @@ public class StatementSemanticsTest {
 
     @Test
     void testNestedIfStmt() throws Exception {
-        var env0 = new RuntimeEnvironment(
+        var env0 = new Environment(
                 Reader.readStatement("if (x < 42) then if (x < 23) then x = 42 else x = 23"),
                 new HashMap<>(Map.of("x", 23)));
         StatementSemantics.evaluate(env0);
@@ -56,7 +56,7 @@ public class StatementSemanticsTest {
 
     @Test
     void testIfNoBoolCond() throws Exception {
-        var env0 = new RuntimeEnvironment(
+        var env0 = new Environment(
                 Reader.readStatement("if x then x = 42 else x = 23"),
                 new HashMap<>(Map.of("x", 23)));
         assertThrows(RuntimeException.class, () -> StatementSemantics.evaluate(env0));
@@ -65,7 +65,7 @@ public class StatementSemanticsTest {
 
     @Test
     void testSeq2() throws Exception {
-        var env0 = new RuntimeEnvironment(
+        var env0 = new Environment(
                 Reader.readStatement("x=x+1;x=x+1"),
                 new HashMap<>(Map.of("x", 1)));
         StatementSemantics.evaluate(env0);
@@ -74,7 +74,7 @@ public class StatementSemanticsTest {
 
     @Test
     void testSeq3() throws Exception {
-        var env0 = new RuntimeEnvironment(
+        var env0 = new Environment(
                 Reader.readStatement("x=x+y; y=x; x=x+1"),
                 new HashMap<>(Map.of("x", 1, "y", 2)));
         StatementSemantics.evaluate(env0);

@@ -13,8 +13,8 @@ public class StepExpressionSemanticsTest {
 
     @Test
     void testStepRef() throws Exception {
-        var env = new StepRuntimeEnvironment(
-                new RuntimeEnvironment(null, Map.of("x", 23)),
+        var env = new StepEnvironment(
+                new Environment(null, Map.of("x", 23)),
                 null,
                 null
         );
@@ -23,15 +23,15 @@ public class StepExpressionSemanticsTest {
 
     @Test
     void testStepDeadlock() throws Exception {
-        var env = new StepRuntimeEnvironment(
-                new RuntimeEnvironment(null, Map.of("x", 23)),
+        var env = new StepEnvironment(
+                new Environment(null, Map.of("x", 23)),
                 null,
                 null
         );
         assertFalse(env.isSoupAction());
         assertEquals(false, StepExpressionSemantics.evaluate("deadlock", env));
 
-        env.target = new RuntimeEnvironment(env);
+        env.target = new Environment(env);
         assertEquals(false, StepExpressionSemantics.evaluate("deadlock", env));
 
         env.action = MaybeStutter.stutter();
@@ -43,10 +43,10 @@ public class StepExpressionSemanticsTest {
 
     @Test
     void testStepRefPrime() throws Exception {
-        var env = new StepRuntimeEnvironment(
+        var env = new StepEnvironment(
                 null,
                 null,
-                new RuntimeEnvironment(null, Map.of("x", 23))
+                new Environment(null, Map.of("x", 23))
         );
         assertEquals(23, StepExpressionSemantics.evaluate("x'", env));
 
@@ -55,7 +55,7 @@ public class StepExpressionSemanticsTest {
 
     @Test
     void testNamedPieceRef() throws Exception {
-        var env = new StepRuntimeEnvironment(
+        var env = new StepEnvironment(
                 null,
                 MaybeStutter.of(new NamedPiece("p1", null, null, Position.ZERO)),
                 null);
@@ -68,10 +68,10 @@ public class StepExpressionSemanticsTest {
 
     @Test
     void testEnabled() throws Exception {
-        var env = new StepRuntimeEnvironment(
-                new RuntimeEnvironment(null, Map.of("x", 23)),
+        var env = new StepEnvironment(
+                new Environment(null, Map.of("x", 23)),
                 MaybeStutter.of(new NamedPiece("p1", null, null, Position.ZERO)),
-                new RuntimeEnvironment(null, Map.of("x", 42)));
+                new Environment(null, Map.of("x", 42)));
         assertTrue((boolean)StepExpressionSemantics.evaluate("enabled p:p1", env));
         assertFalse((boolean)StepExpressionSemantics.evaluate("enabled p:p2", env));
         assertTrue((boolean)StepExpressionSemantics.evaluate("enabled x' > x", env));
