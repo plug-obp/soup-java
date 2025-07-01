@@ -29,7 +29,7 @@ public interface FunctionalVisitor<I, O> {
     O visit(BooleanLiteral node, I input);
     O visit(IntegerLiteral node, I input);
     O visit(DoubleLiteral node, I input);
-    <X> O visit(Reference<X> node, I input);
+    O visit(Reference<?> node, I input);
     O visit(UnaryExpression node, I input);
     O visit(NotExpression node, I input);
     O visit(PlusExpression node, I input);

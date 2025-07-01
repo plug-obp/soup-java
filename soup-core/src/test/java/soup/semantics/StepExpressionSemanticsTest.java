@@ -1,11 +1,11 @@
 package soup.semantics;
 
-import obp3.sli.core.MaybeStutter;
 import org.junit.jupiter.api.Test;
 import soup.syntax.model.Position;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,10 +34,10 @@ public class StepExpressionSemanticsTest {
         env.target = new Environment(env);
         assertEquals(false, StepExpressionSemantics.evaluate("deadlock", env));
 
-        env.action = MaybeStutter.stutter();
+        env.action = Optional.empty();
         assertEquals(true, StepExpressionSemantics.evaluate("deadlock", env));
 
-        env.action = MaybeStutter.of(new NamedPiece("x", null, null, Position.ZERO));
+        env.action = Optional.of(new NamedPiece("x", null, null, Position.ZERO));
         assertEquals(false, StepExpressionSemantics.evaluate("deadlock", env));
     }
 
@@ -57,11 +57,11 @@ public class StepExpressionSemanticsTest {
     void testNamedPieceRef() throws Exception {
         var env = new StepEnvironment(
                 null,
-                MaybeStutter.of(new NamedPiece("p1", null, null, Position.ZERO)),
+                Optional.of(new NamedPiece("p1", null, null, Position.ZERO)),
                 null);
         assertTrue((boolean)StepExpressionSemantics.evaluate("p:p1", env));
         assertFalse((boolean)StepExpressionSemantics.evaluate("p:p2", env));
-        env.action = MaybeStutter.stutter();
+        env.action = Optional.empty();
         assertFalse((boolean)StepExpressionSemantics.evaluate("p:p1", env));
         assertFalse((boolean)StepExpressionSemantics.evaluate("p:p2", env));
     }
@@ -70,7 +70,7 @@ public class StepExpressionSemanticsTest {
     void testEnabled() throws Exception {
         var env = new StepEnvironment(
                 new Environment(null, Map.of("x", 23)),
-                MaybeStutter.of(new NamedPiece("p1", null, null, Position.ZERO)),
+                Optional.of(new NamedPiece("p1", null, null, Position.ZERO)),
                 new Environment(null, Map.of("x", 42)));
         assertTrue((boolean)StepExpressionSemantics.evaluate("enabled p:p1", env));
         assertFalse((boolean)StepExpressionSemantics.evaluate("enabled p:p2", env));

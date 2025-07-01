@@ -19,7 +19,7 @@ public class StepExpressionSemantics extends ExpressionSemantics {
     }
 
     @Override
-    public Object visit(Reference node, Environment environment) {
+    public Object visit(Reference<?> node, Environment environment) {
         var env = (StepEnvironment) environment;
         //if the reference is "deadlock"
         if (node.name.equals("deadlock")) {

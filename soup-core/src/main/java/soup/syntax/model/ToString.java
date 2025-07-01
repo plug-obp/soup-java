@@ -56,7 +56,7 @@ public class ToString implements FunctionalVisitor<Void, String>{
     }
 
     @Override
-    public <X> String visit(Reference<X> node, Void input) {
+    public String visit(Reference<?> node, Void input) {
         return node.name;
     }
 

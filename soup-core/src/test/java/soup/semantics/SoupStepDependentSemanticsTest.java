@@ -1,6 +1,6 @@
 package soup.semantics;
 
-import obp3.sli.core.MaybeStutter;
+import obp3.sli.core.operators.product.Step;
 import org.junit.jupiter.api.Test;
 import soup.syntax.Reader;
 import soup.syntax.model.Position;
@@ -8,6 +8,7 @@ import soup.syntax.model.declarations.pieces.AnonymousPiece;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,8 +18,8 @@ public class SoupStepDependentSemanticsTest {
     void tstS() throws Exception {
         var se = new Environment(null, Map.of("x", 0));
         var te = new Environment(null, Map.of("x", 3));
-        var a = MaybeStutter.<AnonymousPiece>of(new NamedPiece("piece", null, null, Position.ZERO));
-        var step = new StepEnvironment(se, a, te);
+        var a = Optional.<AnonymousPiece>of(new NamedPiece("piece", null, null, Position.ZERO));
+        var step = new Step<>(se, a, te);
 
         var code = """
                 var x = 0;

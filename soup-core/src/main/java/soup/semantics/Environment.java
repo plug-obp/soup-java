@@ -57,4 +57,9 @@ public class Environment {
     public int hashCode() {
         return Objects.hash(model, environment);
     }
+
+    @Override
+    public String toString() {
+        return environment.toString();
+    }
 }

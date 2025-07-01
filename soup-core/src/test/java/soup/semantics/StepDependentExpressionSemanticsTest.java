@@ -1,6 +1,6 @@
 package soup.semantics;
 
-import obp3.sli.core.MaybeStutter;
+import obp3.sli.core.operators.product.Step;
 import org.junit.jupiter.api.Test;
 import soup.syntax.Reader;
 import soup.syntax.model.Position;
@@ -9,6 +9,7 @@ import soup.syntax.model.declarations.pieces.NamedPiece;
 import soup.syntax.model.expressions.Expression;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,8 +20,8 @@ public class StepDependentExpressionSemanticsTest {
     void dependentExpressionEvaluation() {
         var se = new Environment(null, Map.of("x", 0));
         var te = new Environment(null, Map.of("x", 3));
-        var a = MaybeStutter.<AnonymousPiece>of(new NamedPiece("piece", null, null, Position.ZERO));
-        var step = new StepEnvironment(se, a, te);
+        var a = Optional.<AnonymousPiece>of(new NamedPiece("piece", null, null, Position.ZERO));
+        var step = new Step<>(se, a, te);
         var environment = new StepDependentEnvironment(step, new Environment());
         Function<String, Object> evaluate = (code) -> {
             Expression exp = null;

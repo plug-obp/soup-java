@@ -50,7 +50,7 @@ public class ExpressionSemantics extends FunctionalVisitorBase<Environment, Obje
     }
 
     @Override
-    public Object visit(Reference node, Environment environment) {
+    public Object visit(Reference<?> node, Environment environment) {
         return environment.lookup(node.name);
     }
 

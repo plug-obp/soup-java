@@ -54,7 +54,7 @@ public class FunctionalVisitorBase<I, O> implements FunctionalVisitor<I, O> {
     }
 
     @Override
-    public <X> O visit(Reference<X> node, I input) {
+    public O visit(Reference<?> node, I input) {
         return visit((Expression) node, input);
     }
 

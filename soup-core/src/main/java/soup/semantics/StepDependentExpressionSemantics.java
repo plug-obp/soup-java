@@ -16,6 +16,8 @@ public class StepDependentExpressionSemantics extends ExpressionSemantics {
 
     @Override
     public Object visit(InputReference node, Environment environment) {
-        return node.operand.accept(inputSemantics, ((StepDependentEnvironment)environment).input);
+        var step = ((StepDependentEnvironment)environment).input;
+        var env = new StepEnvironment(step.start(), step.action(), step.end());
+        return node.operand.accept(inputSemantics, env);
     }
 }

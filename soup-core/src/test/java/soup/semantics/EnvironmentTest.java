@@ -1,10 +1,10 @@
 package soup.semantics;
 
-import obp3.sli.core.MaybeStutter;
 import org.junit.jupiter.api.Test;
 import soup.syntax.model.expressions.literals.BooleanLiteral;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -32,8 +32,8 @@ public class EnvironmentTest {
     void testEqualsSRE() throws Exception {
         var e1 = new Environment(null, Map.of("x", 23));
         var e2 = new Environment(null, Map.of("x", 23));
-        var se1 = new StepEnvironment(e1, MaybeStutter.stutter(), e2);
-        var se2 = new StepEnvironment(e1, MaybeStutter.stutter(), e2);
+        var se1 = new StepEnvironment(e1, Optional.empty(), e2);
+        var se2 = new StepEnvironment(e1, Optional.empty(), e2);
 
         assertEquals(se1, se2);
         se1.model = BooleanLiteral.TRUE;

@@ -1,16 +1,16 @@
 package soup.semantics;
 
-import obp3.sli.core.MaybeStutter;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class StepEnvironment extends Environment {
-    MaybeStutter<AnonymousPiece> action;
+    Optional<AnonymousPiece> action;
     Environment target;
 
-    public StepEnvironment(Environment source, MaybeStutter<AnonymousPiece> action, Environment target) {
+    public StepEnvironment(Environment source, Optional<AnonymousPiece> action, Environment target) {
         super(source);
         this.action = action;
         this.target = target;
@@ -27,16 +27,16 @@ public class StepEnvironment extends Environment {
     }
 
     public boolean actionMatch(String name) {
-        if (action.isStutter()) return false;
+        if (action.isEmpty()) return false;
         return action.get() instanceof NamedPiece piece && piece.name.equals(name);
     }
 
     public boolean isSoupAction() {
-        return action != null && action.isAction();
+        return action != null && action.isPresent();
     }
 
     public boolean isStutter() {
-        return action != null && action.isStutter();
+        return action != null && action.isEmpty();
     }
 
     public boolean selfLoop() {

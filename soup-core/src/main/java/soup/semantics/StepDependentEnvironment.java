@@ -1,16 +1,18 @@
 package soup.semantics;
 
+import obp3.sli.core.operators.product.Step;
 import soup.syntax.model.SyntaxTreeElement;
+import soup.syntax.model.declarations.pieces.AnonymousPiece;
 
 public class StepDependentEnvironment extends Environment {
-    StepEnvironment input;
+    Step<AnonymousPiece, Environment> input;
 
-    public StepDependentEnvironment(SyntaxTreeElement model, StepEnvironment input) {
+    public StepDependentEnvironment(SyntaxTreeElement model, Step<AnonymousPiece, Environment> input) {
         super(model);
         this.input = input;
     }
 
-    public StepDependentEnvironment(StepEnvironment input, Environment configuration) {
+    public StepDependentEnvironment(Step<AnonymousPiece, Environment> input, Environment configuration) {
         super(configuration);
         this.input = input;
     }

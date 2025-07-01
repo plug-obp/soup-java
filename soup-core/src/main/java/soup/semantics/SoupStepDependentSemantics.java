@@ -1,6 +1,7 @@
 package soup.semantics;
 
 import obp3.sli.core.ISemanticRelation;
+import obp3.sli.core.operators.product.Step;
 import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 
@@ -8,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SoupStepDependentSemantics implements ISemanticRelation<StepEnvironment, AnonymousPiece, Environment> {
+public class SoupStepDependentSemantics implements ISemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> {
     Soup model;
     StepExpressionSemantics inputSemantics;
     StepDependentExpressionSemantics expressionSemantics;
@@ -42,7 +43,7 @@ public class SoupStepDependentSemantics implements ISemanticRelation<StepEnviron
     }
 
     @Override
-    public List<AnonymousPiece> actions(StepEnvironment input, Environment configuration) {
+    public List<AnonymousPiece> actions(Step<AnonymousPiece, Environment> input, Environment configuration) {
         if (!(configuration.model instanceof Soup soup)) { return Collections.emptyList(); }
         var extendedConfiguration = new StepDependentEnvironment(input, configuration);
         return soup.pieces.stream().filter(
@@ -53,14 +54,14 @@ public class SoupStepDependentSemantics implements ISemanticRelation<StepEnviron
     }
 
     @Override
-    public List<Environment> execute(AnonymousPiece action, StepEnvironment input, Environment configuration) {
+    public List<Environment> execute(AnonymousPiece action, Step<AnonymousPiece, Environment> input, Environment configuration) {
         var extendedConfiguration = new StepDependentEnvironment(input, configuration);
         return Collections.singletonList(
                 statementSemantics.evaluate(action.effect, extendedConfiguration)
         );
     }
 
-    public ISemanticRelation<StepEnvironment, AnonymousPiece, Environment> pureSemantics() {
+    public ISemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> pureSemantics() {
         return new ISemanticRelation<>() {
 
             @Override
@@ -69,15 +70,14 @@ public class SoupStepDependentSemantics implements ISemanticRelation<StepEnviron
             }
 
             @Override
-            public List<AnonymousPiece> actions(StepEnvironment input, Environment configuration) {
+            public List<AnonymousPiece> actions(Step<AnonymousPiece, Environment> input, Environment configuration) {
                 return SoupStepDependentSemantics.this.actions(input, configuration);
             }
 
             @Override
-            public List<Environment> execute(AnonymousPiece action, StepEnvironment input, Environment configuration) {
-                var in = new StepEnvironment(input);
+            public List<Environment> execute(AnonymousPiece action, Step<AnonymousPiece, Environment> input, Environment configuration) {
                 var config = new Environment(configuration);
-                return SoupStepDependentSemantics.this.execute(action, in, config);
+                return SoupStepDependentSemantics.this.execute(action, input, config);
             }
         };
     }
