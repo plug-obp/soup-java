@@ -18,11 +18,11 @@ import soup.syntax.model.expressions.unary.PlusExpression;
 
 import java.util.Map;
 
-public class ExpressionInterpreter extends FunctionalVisitorBase<RuntimeEnvironment, Object> {
+public class ExpressionSemantics extends FunctionalVisitorBase<RuntimeEnvironment, Object> {
 
     public static Object evaluate(Expression expression, Map<String, Object> environment) {
         var runtimeEnvironment = new RuntimeEnvironment(expression, environment);
-        return expression.accept(new ExpressionInterpreter(), runtimeEnvironment);
+        return expression.accept(new ExpressionSemantics(), runtimeEnvironment);
     }
 
     public static Object evaluate(String expression, Map<String, Object> environment) throws Exception {

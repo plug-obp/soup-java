@@ -10,25 +10,25 @@ import java.util.stream.Collectors;
 
 public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEnvironment> {
     Soup model;
-    ExpressionInterpreter expressionInterpreter = new ExpressionInterpreter();
-    StatementInterpreter statementInterpreter = new StatementInterpreter(expressionInterpreter);
+    ExpressionSemantics expressionSemantics;
+    StatementSemantics statementSemantics;
 
     public SoupSemantics(Soup model) {
-        var expI = new ExpressionInterpreter();
-        this(model, expI, new StatementInterpreter(expI));
+        var expI = new ExpressionSemantics();
+        this(model, expI, new StatementSemantics(expI));
     }
 
-    public SoupSemantics(Soup model, ExpressionInterpreter expressionInterpreter) {
-        this(model, expressionInterpreter, new StatementInterpreter(expressionInterpreter));
+    public SoupSemantics(Soup model, ExpressionSemantics expressionSemantics) {
+        this(model, expressionSemantics, new StatementSemantics(expressionSemantics));
     }
 
     public SoupSemantics(
             Soup model,
-            ExpressionInterpreter expressionInterpreter,
-            StatementInterpreter statementInterpreter) {
+            ExpressionSemantics expressionSemantics,
+            StatementSemantics statementSemantics) {
         this.model = model;
-        this.expressionInterpreter = expressionInterpreter;
-        this.statementInterpreter = statementInterpreter;
+        this.expressionSemantics = expressionSemantics;
+        this.statementSemantics = statementSemantics;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEn
         for (var variable : model.variables) {
             runtimeEnvironment.define(
                     variable.name,
-                    variable.initial.accept(expressionInterpreter, runtimeEnvironment));
+                    variable.initial.accept(expressionSemantics, runtimeEnvironment));
         }
         return Collections.singletonList(runtimeEnvironment);
     }
@@ -47,15 +47,15 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, RuntimeEn
         if (!(configuration.model instanceof Soup soup)) { return Collections.emptyList(); }
         return soup.pieces.stream().filter(
                 piece -> {
-                    var guard = piece.guard.accept(expressionInterpreter, configuration);
-                    return expressionInterpreter.ensureBoolean("guard", guard);
+                    var guard = piece.guard.accept(expressionSemantics, configuration);
+                    return expressionSemantics.ensureBoolean("guard", guard);
                 }).collect(Collectors.toList());
     }
 
     @Override
     public List<RuntimeEnvironment> execute(AnonymousPiece action, RuntimeEnvironment configuration) {
         return Collections.singletonList(
-                action.effect.accept(statementInterpreter, configuration)
+                action.effect.accept(statementSemantics, configuration)
         );
     }
 

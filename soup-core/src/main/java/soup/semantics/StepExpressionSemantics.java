@@ -5,7 +5,7 @@ import soup.syntax.model.dependent.NamedPieceReference;
 import soup.syntax.model.dependent.PrimedReference;
 import soup.syntax.model.expressions.Reference;
 
-public class StepExpressionInterpreter extends ExpressionInterpreter {
+public class StepExpressionSemantics extends ExpressionSemantics {
     @Override
     public Object visit(Reference node, RuntimeEnvironment environment) {
         var env = (StepRuntimeEnvironment) environment;
