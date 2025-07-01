@@ -21,6 +21,14 @@ compileJava {
     options.compilerArgs.add('--enable-preview')
 }
 
+compileTestJava {
+    options.compilerArgs.add('--enable-preview')
+}
+
+test {
+    jvmArgs += '--enable-preview'
+}
+
 dependencies {
     antlr group: 'org.antlr', name: 'antlr4', version: '4.13.2'
     implementation project(':obp3-algos')
