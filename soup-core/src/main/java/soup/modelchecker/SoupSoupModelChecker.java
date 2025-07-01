@@ -90,8 +90,8 @@ public class SoupSoupModelChecker extends ModelChecker<AnonymousPiece, Environme
                 depthBound
         );
 
-        var modelchecker = checker.modelChecker();
-        var result = modelchecker.runAlone();
+        var modelChecker = checker.modelChecker();
+        var result = modelChecker.runAlone();
         System.out.println(result);
     }
 }
