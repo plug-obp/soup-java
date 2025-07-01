@@ -168,6 +168,12 @@ public class Antrl4ToSyntax extends SoupBaseListener {
     }
 
     @Override
+    public void exitSkipStatement(SoupParser.SkipStatementContext ctx) {
+        model.put(ctx, Skip.INSTANCE);
+        positions.put(Skip.INSTANCE, Position.ZERO);
+    }
+
+    @Override
     public void exitAssign(SoupParser.AssignContext ctx) {
         var target = new Reference<VariableDeclaration>(ctx.IDENTIFIER().getText(), getPosition(ctx));
         var expression = get(ctx.expression(), Expression.class);

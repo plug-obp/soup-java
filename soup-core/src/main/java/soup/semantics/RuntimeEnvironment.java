@@ -14,6 +14,7 @@ public class RuntimeEnvironment {
         this.model = model;
     }
     public RuntimeEnvironment(RuntimeEnvironment other) {
+        if (other == null) { return; }
         this.model = other.model;
         this.environment = new HashMap<>(other.environment);
     }
@@ -48,11 +49,11 @@ public class RuntimeEnvironment {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof RuntimeEnvironment that)) return false;
-        return Objects.equals(environment, that.environment);
+        return Objects.equals(model, that.model) && Objects.equals(environment, that.environment);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(environment);
+        return Objects.hash(model, environment);
     }
 }

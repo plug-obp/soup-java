@@ -1,19 +1,16 @@
 package soup.semantics;
 
-import soup.syntax.model.declarations.Soup;
+import obp3.sli.core.MaybeStutter;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 
-public class StepRuntimeEnvironment extends RuntimeEnvironment {
-    AnonymousPiece action;
-    RuntimeEnvironment target;
-    public StepRuntimeEnvironment(Soup model, AnonymousPiece action, RuntimeEnvironment target) {
-        super(model);
-        this.action = action;
-        this.target = target;
-    }
+import java.util.Objects;
 
-    public StepRuntimeEnvironment(RuntimeEnvironment source, AnonymousPiece action, RuntimeEnvironment target) {
+public class StepRuntimeEnvironment extends RuntimeEnvironment {
+    MaybeStutter<AnonymousPiece> action;
+    RuntimeEnvironment target;
+
+    public StepRuntimeEnvironment(RuntimeEnvironment source, MaybeStutter<AnonymousPiece> action, RuntimeEnvironment target) {
         super(source);
         this.action = action;
         this.target = target;
@@ -24,12 +21,33 @@ public class StepRuntimeEnvironment extends RuntimeEnvironment {
     }
 
     public boolean actionMatch(String name) {
-        return action instanceof NamedPiece && ((NamedPiece) action).name.equals(name);
+        if (action.isStutter()) return false;
+        return action.get() instanceof NamedPiece piece && piece.name.equals(name);
     }
 
     public boolean isSoupAction() {
-        return action != null;
+        return action != null && action.isAction();
     }
 
+    public boolean isStutter() {
+        return action != null && action.isStutter();
+    }
 
+    public boolean selfLoop() {
+        if (target == null) return false;
+        return target.equals(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StepRuntimeEnvironment that)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(action, that.action) && Objects.equals(target, that.target);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), action, target);
+    }
 }

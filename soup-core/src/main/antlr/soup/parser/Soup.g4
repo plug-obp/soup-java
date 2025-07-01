@@ -38,7 +38,8 @@ literal
     ;
 
 statement
-    : assign                                            #AssignStatement
+    : SKIPS                                             #SkipStatement
+    | assign                                            #AssignStatement
     | IF expression THEN statement (ELSE statement)?    #IfStatement
     | statement SEMICOLON statement                     #SequenceStatement
     ;
@@ -53,6 +54,7 @@ ELSE: 'else';
 VAR: 'var';
 ENABLED: 'enabled';
 INPUT:'@';
+SKIPS: 'skip';
 
 
 
