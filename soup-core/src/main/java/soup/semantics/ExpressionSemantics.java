@@ -2,6 +2,7 @@ package soup.semantics;
 
 import soup.syntax.Reader;
 import soup.syntax.model.FunctionalVisitorBase;
+import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.expressions.ConditionalExpression;
 import soup.syntax.model.expressions.Expression;
 import soup.syntax.model.expressions.Reference;
@@ -51,6 +52,12 @@ public class ExpressionSemantics extends FunctionalVisitorBase<Environment, Obje
 
     @Override
     public Object visit(Reference<?> node, Environment environment) {
+        if (node.name.equals("deadlock")) {
+            if (environment.model instanceof Soup soup) {
+                var semantics = new SoupSemantics(soup);
+                return semantics.actions(environment).isEmpty();
+            }
+        }
         return environment.lookup(node.name);
     }
 

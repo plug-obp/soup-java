@@ -1,6 +1,7 @@
 package soup.modelchecker;
 
 import obp3.IExecutable;
+import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.modelchecking.buchi.ndfs.gs09.cdlp05.separated.EmptinessCheckerBuchiGS09CDLP05Separated;
 import obp3.modelchecking.safety.SafetyDephtFirstTraversal;
 import obp3.sli.core.ISemanticRelation;
@@ -29,18 +30,19 @@ public abstract class ModelChecker<MA, MC, PA, PC> {
         this.depthBound = depthBound;
     }
 
-    public IExecutable<?> modelChecker() {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public IExecutable<EmptinessCheckerAnswer<?>> modelChecker() {
         if (getPropertySemantics() == null) {
             var rg = new SemanticRelation2RootedGraph<>(getModelSemantics());
-            return new SafetyDephtFirstTraversal<>(
+            return (IExecutable)new SafetyDephtFirstTraversal<>(
                     traversalAlgorithm, rg, depthBound, null, acceptingPredicate());
         }
         var product = new StepSynchronousProductSemantics<>(new StepProductParameters<>(getModelSemantics(), getPropertySemantics()));
         var rg = new SemanticRelation2RootedGraph<>(product);
 
         return (isBuchi()) ?
-                new EmptinessCheckerBuchiGS09CDLP05Separated<>(
+                (IExecutable)new EmptinessCheckerBuchiGS09CDLP05Separated<>(
                         traversalAlgorithm, rg, depthBound, null, (c) -> acceptingPredicate().test(c.r())) :
-                new SafetyDephtFirstTraversal<>(traversalAlgorithm, rg, depthBound, null, (c) -> acceptingPredicate().test(c.r()));
+                (IExecutable)new SafetyDephtFirstTraversal<>(traversalAlgorithm, rg, depthBound, null, (c) -> acceptingPredicate().test(c.r()));
     }
 }
