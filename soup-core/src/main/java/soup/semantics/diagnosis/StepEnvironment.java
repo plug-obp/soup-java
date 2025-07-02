@@ -1,5 +1,6 @@
-package soup.semantics;
+package soup.semantics.diagnosis;
 
+import soup.semantics.base.Environment;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 
@@ -7,12 +8,18 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class StepEnvironment extends Environment {
-    Optional<AnonymousPiece> action;
-    Environment target;
+    public Optional<AnonymousPiece> action;
+    public Environment target;
 
-    public StepEnvironment(Environment source, Optional<AnonymousPiece> action, Environment target) {
+    public StepEnvironment(Environment source, AnonymousPiece action, Environment target) {
         super(source);
-        this.action = action;
+        this.action = Optional.of(action);
+        this.target = target;
+    }
+
+    public StepEnvironment(Environment source, Environment target) {
+        super(source);
+        this.action = Optional.empty();
         this.target = target;
     }
 

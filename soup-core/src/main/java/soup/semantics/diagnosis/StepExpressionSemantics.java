@@ -1,5 +1,7 @@
-package soup.semantics;
+package soup.semantics.diagnosis;
 
+import soup.semantics.base.Environment;
+import soup.semantics.base.ExpressionSemantics;
 import soup.syntax.Reader;
 import soup.syntax.model.dependent.EnabledExpression;
 import soup.syntax.model.dependent.NamedPieceReference;

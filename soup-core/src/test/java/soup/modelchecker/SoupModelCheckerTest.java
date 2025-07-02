@@ -52,5 +52,6 @@ public class SoupModelCheckerTest {
         var pred = Reader.readExpression("deadlock");
         var result = predicateMC(model, pred).runAlone();
         assertFalse(result.holds);
+        System.out.println(result);
     }
 }

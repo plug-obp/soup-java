@@ -1,6 +1,7 @@
-package soup.semantics;
+package soup.semantics.dependent;
 
 import obp3.sli.core.operators.product.Step;
+import soup.semantics.base.Environment;
 import soup.syntax.model.SyntaxTreeElement;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 

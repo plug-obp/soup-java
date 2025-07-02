@@ -1,6 +1,7 @@
 package soup.semantics;
 
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.ExpressionSemantics;
 
 import java.text.ParseException;
 import java.util.Collections;

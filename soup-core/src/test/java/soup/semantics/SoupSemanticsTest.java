@@ -1,6 +1,7 @@
 package soup.semantics;
 
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.SoupSemantics;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 

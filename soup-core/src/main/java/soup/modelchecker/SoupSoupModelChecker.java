@@ -4,10 +4,10 @@ import obp3.sli.core.ISemanticRelation;
 import obp3.sli.core.SemanticRelation;
 import obp3.sli.core.operators.product.Step;
 import obp3.traversal.dfs.DepthFirstTraversal;
-import soup.semantics.Environment;
-import soup.semantics.ExpressionSemantics;
-import soup.semantics.SoupSemantics;
-import soup.semantics.SoupStepDependentSemantics;
+import soup.semantics.base.Environment;
+import soup.semantics.base.SoupSemantics;
+import soup.semantics.dependent.SoupStepDependentSemantics;
+import soup.semantics.diagnosis.DiagnosisExpressionSemantics;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
@@ -51,7 +51,7 @@ public class SoupSoupModelChecker extends ModelChecker<AnonymousPiece, Environme
         return this::acceptingPredicateImp;
     }
 
-    ExpressionSemantics evaluator = new ExpressionSemantics();
+    DiagnosisExpressionSemantics evaluator = new DiagnosisExpressionSemantics();
     boolean acceptingPredicateImp(Environment c) {
         return (boolean) evaluator.evaluate(acceptingPredicateExpression, c);
     }

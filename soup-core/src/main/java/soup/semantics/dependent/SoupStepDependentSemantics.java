@@ -1,7 +1,10 @@
-package soup.semantics;
+package soup.semantics.dependent;
 
 import obp3.sli.core.ISemanticRelation;
 import obp3.sli.core.operators.product.Step;
+import soup.semantics.base.Environment;
+import soup.semantics.base.StatementSemantics;
+import soup.semantics.diagnosis.StepExpressionSemantics;
 import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 

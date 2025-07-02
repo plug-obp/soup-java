@@ -1,4 +1,4 @@
-package soup.semantics;
+package soup.semantics.base;
 
 import soup.syntax.model.SyntaxTreeElement;
 
@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Environment {
-    SyntaxTreeElement model;
-    Map<String, Object> environment = new HashMap<>();
+    public SyntaxTreeElement model;
+    public Map<String, Object> environment = new HashMap<>();
 
     public Environment() {}
     public Environment(SyntaxTreeElement model) {

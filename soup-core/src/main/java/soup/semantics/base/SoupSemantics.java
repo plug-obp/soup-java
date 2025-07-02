@@ -1,4 +1,4 @@
-package soup.semantics;
+package soup.semantics.base;
 
 import obp3.sli.core.SemanticRelation;
 import soup.syntax.model.declarations.Soup;

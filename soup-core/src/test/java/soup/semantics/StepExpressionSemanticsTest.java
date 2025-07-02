@@ -1,6 +1,9 @@
 package soup.semantics;
 
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.Environment;
+import soup.semantics.diagnosis.StepEnvironment;
+import soup.semantics.diagnosis.StepExpressionSemantics;
 import soup.syntax.model.Position;
 import soup.syntax.model.declarations.pieces.NamedPiece;
 
@@ -57,7 +60,7 @@ public class StepExpressionSemanticsTest {
     void testNamedPieceRef() throws Exception {
         var env = new StepEnvironment(
                 null,
-                Optional.of(new NamedPiece("p1", null, null, Position.ZERO)),
+                new NamedPiece("p1", null, null, Position.ZERO),
                 null);
         assertTrue((boolean)StepExpressionSemantics.evaluate("p:p1", env));
         assertFalse((boolean)StepExpressionSemantics.evaluate("p:p2", env));
@@ -70,7 +73,7 @@ public class StepExpressionSemanticsTest {
     void testEnabled() throws Exception {
         var env = new StepEnvironment(
                 new Environment(null, Map.of("x", 23)),
-                Optional.of(new NamedPiece("p1", null, null, Position.ZERO)),
+                new NamedPiece("p1", null, null, Position.ZERO),
                 new Environment(null, Map.of("x", 42)));
         assertTrue((boolean)StepExpressionSemantics.evaluate("enabled p:p1", env));
         assertFalse((boolean)StepExpressionSemantics.evaluate("enabled p:p2", env));

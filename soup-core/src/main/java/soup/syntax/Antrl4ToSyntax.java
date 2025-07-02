@@ -34,7 +34,6 @@ import soup.syntax.model.statements.*;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Antrl4ToSyntax extends SoupBaseListener {
     ParseTreeProperty<Object> model = new ParseTreeProperty<>();

@@ -1,5 +1,9 @@
-package soup.semantics;
+package soup.semantics.dependent;
 
+import soup.semantics.base.Environment;
+import soup.semantics.base.ExpressionSemantics;
+import soup.semantics.diagnosis.StepEnvironment;
+import soup.semantics.diagnosis.StepExpressionSemantics;
 import soup.syntax.model.dependent.InputReference;
 import soup.syntax.model.expressions.Expression;
 
@@ -17,7 +21,9 @@ public class StepDependentExpressionSemantics extends ExpressionSemantics {
     @Override
     public Object visit(InputReference node, Environment environment) {
         var step = ((StepDependentEnvironment)environment).input;
-        var env = new StepEnvironment(step.start(), step.action(), step.end());
+        var env = step.action()
+                .map((action) -> new StepEnvironment(step.start(), action, step.end()))
+                .orElse(new StepEnvironment(step.start(), step.end()));
         return node.operand.accept(inputSemantics, env);
     }
 }

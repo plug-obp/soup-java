@@ -1,4 +1,4 @@
-package soup.semantics;
+package soup.semantics.base;
 
 import soup.syntax.Reader;
 import soup.syntax.model.FunctionalVisitorBase;
@@ -52,16 +52,10 @@ public class ExpressionSemantics extends FunctionalVisitorBase<Environment, Obje
 
     @Override
     public Object visit(Reference<?> node, Environment environment) {
-        if (node.name.equals("deadlock")) {
-            if (environment.model instanceof Soup soup) {
-                var semantics = new SoupSemantics(soup);
-                return semantics.actions(environment).isEmpty();
-            }
-        }
         return environment.lookup(node.name);
     }
 
-    boolean ensureBoolean(String operator, Object value) {
+    public boolean ensureBoolean(String operator, Object value) {
         if (value instanceof Boolean) {
             return (Boolean) value;
         }

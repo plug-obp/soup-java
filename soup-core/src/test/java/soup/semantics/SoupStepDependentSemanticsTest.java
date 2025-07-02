@@ -2,6 +2,8 @@ package soup.semantics;
 
 import obp3.sli.core.operators.product.Step;
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.Environment;
+import soup.semantics.dependent.SoupStepDependentSemantics;
 import soup.syntax.Reader;
 import soup.syntax.model.Position;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;

@@ -1,6 +1,8 @@
 package soup.semantics;
 
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.Environment;
+import soup.semantics.base.StatementSemantics;
 import soup.syntax.Reader;
 
 import java.util.HashMap;

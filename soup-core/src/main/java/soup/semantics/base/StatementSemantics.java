@@ -1,4 +1,4 @@
-package soup.semantics;
+package soup.semantics.base;
 
 import soup.syntax.model.FunctionalVisitorBase;
 import soup.syntax.model.statements.*;
