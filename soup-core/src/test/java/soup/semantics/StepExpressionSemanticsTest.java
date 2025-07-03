@@ -18,7 +18,6 @@ public class StepExpressionSemanticsTest {
     void testStepRef() throws Exception {
         var env = new StepEnvironment(
                 new Environment(null, Map.of("x", 23)),
-                null,
                 null
         );
         assertEquals(23, StepExpressionSemantics.evaluate("x", env));
@@ -28,16 +27,12 @@ public class StepExpressionSemanticsTest {
     void testStepDeadlock() throws Exception {
         var env = new StepEnvironment(
                 new Environment(null, Map.of("x", 23)),
-                null,
                 null
         );
         assertFalse(env.isSoupAction());
         assertEquals(false, StepExpressionSemantics.evaluate("deadlock", env));
 
         env.target = new Environment(env);
-        assertEquals(false, StepExpressionSemantics.evaluate("deadlock", env));
-
-        env.action = Optional.empty();
         assertEquals(true, StepExpressionSemantics.evaluate("deadlock", env));
 
         env.action = Optional.of(new NamedPiece("x", null, null, Position.ZERO));
@@ -47,7 +42,6 @@ public class StepExpressionSemanticsTest {
     @Test
     void testStepRefPrime() throws Exception {
         var env = new StepEnvironment(
-                null,
                 null,
                 new Environment(null, Map.of("x", 23))
         );
