@@ -227,6 +227,12 @@ public class ToString implements FunctionalVisitor<Void, String>{
                 .stream()
                 .map(p -> p.accept(this, input))
                 .collect(Collectors.joining("\n|"));
+        if (node.variables.isEmpty()) {
+            if (node.pieces.isEmpty()) {
+                return "";
+            }
+            return pieces;
+        }
         return "var\n\t" + vars + "\n" + pieces;
     }
 
