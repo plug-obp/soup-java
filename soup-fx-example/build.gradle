@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'fr.ensta'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    modularity.inferModulePath = true
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(23))
+    }
+}
+
+javafx {
+    version = "23"
+    modules = [ 'javafx.controls' ]
+}
+
+dependencies {
+    implementation project(':soup-core')
+    implementation project(':soup-fx')
+
+    implementation project(':obp3-object-browser-api')
+    implementation project(':obp3-object-browser')
+}
+
+application {
+    mainModule = 'obp.soup.fx.example'
+    mainClass = "soup.fx.example.ObjectBrowser"
+    applicationDefaultJvmArgs = [
+        '--add-modules', 'obp.soup.fx.example',
+        '--add-opens', 'java.base/java.lang=obp.fx.objectbrowser',
+        '--add-opens', 'java.base/java.util=obp.fx.objectbrowser'
+    ]
+}
+
