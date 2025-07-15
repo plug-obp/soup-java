@@ -1,0 +1,8 @@
+
+
+group = 'fr.ensta'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
