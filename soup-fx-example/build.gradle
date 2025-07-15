@@ -18,6 +18,18 @@ java {
     }
 }
 
+compileJava {
+    options.compilerArgs.add('--enable-preview')
+}
+
+compileTestJava {
+    options.compilerArgs.add('--enable-preview')
+}
+
+test {
+    jvmArgs += '--enable-preview'
+}
+
 javafx {
     version = "23"
     modules = [ 'javafx.controls' ]
@@ -28,7 +40,7 @@ dependencies {
     implementation project(':soup-fx')
 
     implementation project(':obp3-object-browser-api')
-    implementation project(':obp3-object-browser')
+    implementation project(':obp3-object-browser-base')
 }
 
 application {

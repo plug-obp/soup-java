@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import obp3.fx.objectbrowser.ObjectViewContainer;
+import soup.semantics.base.SoupSemantics;
 import soup.syntax.Reader;
 import soup.syntax.model.Position;
 import soup.syntax.model.declarations.Soup;
@@ -30,10 +31,14 @@ public class ObjectBrowser extends Application {
 
         String modelPath = "../soup-models/alice-bob/";
         var soup = Reader.readSoup(new BufferedReader(new FileReader(modelPath + "alice-bob5.soup")));
+        var sem = new SoupSemantics(soup);
+        var env = sem.initial().getFirst();
+        var act = sem.actions(env).getFirst();
+        env = sem.execute(act, env).getFirst();
 
         //Soup soup = new Soup(new ArrayList<>(List.of(new VariableDeclaration("x", new IntegerLiteral(3, Position.ZERO), Position.ZERO))), List.of(), Position.ZERO);
 
-        root.setCenter(new ObjectViewContainer( soup ).getView());
+        root.setCenter(new ObjectViewContainer( env ).getView());
 
         primaryStage.show();
     }

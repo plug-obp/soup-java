@@ -2,7 +2,6 @@ package soup.fx;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -18,7 +17,6 @@ import obp3.fx.objectbrowser.api.ObjectViewFor;
 import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.expressions.Expression;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @ObjectViewFor(Soup.class)
