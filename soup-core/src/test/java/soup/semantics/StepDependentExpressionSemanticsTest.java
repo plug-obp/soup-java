@@ -1,6 +1,6 @@
 package soup.semantics;
 
-import obp3.sli.core.operators.product.Step;
+import obp3.runtime.sli.Step;
 import org.junit.jupiter.api.Test;
 import soup.semantics.base.Environment;
 import soup.semantics.dependent.StepDependentEnvironment;

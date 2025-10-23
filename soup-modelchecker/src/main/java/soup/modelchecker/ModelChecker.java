@@ -1,13 +1,13 @@
 package soup.modelchecker;
 
-import obp3.IExecutable;
+import obp3.runtime.IExecutable;
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.modelchecking.buchi.ndfs.gs09.cdlp05.separated.EmptinessCheckerBuchiGS09CDLP05Separated;
 import obp3.modelchecking.safety.SafetyDephtFirstTraversal;
-import obp3.sli.core.ISemanticRelation;
-import obp3.sli.core.SemanticRelation;
+import obp3.runtime.sli.ISemanticRelation;
+import obp3.runtime.sli.SemanticRelation;
 import obp3.sli.core.operators.SemanticRelation2RootedGraph;
-import obp3.sli.core.operators.product.Step;
+import obp3.runtime.sli.Step;
 import obp3.sli.core.operators.product.StepSynchronousProductSemantics;
 import obp3.sli.core.operators.product.model.StepProductParameters;
 import obp3.traversal.dfs.DepthFirstTraversal;

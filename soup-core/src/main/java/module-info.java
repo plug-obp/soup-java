@@ -1,4 +1,5 @@
-open module obp.soup.core {
+open module language.soup.core {
+    requires obp.sli.runtime;
     requires obp.algos;
     requires org.antlr.antlr4.runtime;
     exports soup.syntax;
@@ -6,7 +7,6 @@ open module obp.soup.core {
     exports soup.semantics.base;
     exports soup.semantics.dependent;
     exports soup.semantics.diagnosis;
-    exports soup.modelchecker;
     exports soup.syntax.model.declarations;
     exports soup.syntax.model.declarations.pieces;
     exports soup.syntax.model.dependent;

@@ -1,8 +1,8 @@
 package soup.modelchecker;
 
-import obp3.sli.core.ISemanticRelation;
-import obp3.sli.core.SemanticRelation;
-import obp3.sli.core.operators.product.Step;
+import obp3.runtime.sli.ISemanticRelation;
+import obp3.runtime.sli.SemanticRelation;
+import obp3.runtime.sli.Step;
 import obp3.traversal.dfs.DepthFirstTraversal;
 import soup.semantics.base.Environment;
 import soup.semantics.base.SoupSemantics;

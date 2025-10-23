@@ -1,6 +1,6 @@
 package soup.semantics.base;
 
-import obp3.sli.core.SemanticRelation;
+import obp3.runtime.sli.SemanticRelation;
 import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 

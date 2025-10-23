@@ -1,6 +1,6 @@
 package soup.modelchecker;
 
-import obp3.IExecutable;
+import obp3.runtime.IExecutable;
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.traversal.dfs.DepthFirstTraversal;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package soup.semantics.dependent;
 
-import obp3.sli.core.ISemanticRelation;
-import obp3.sli.core.operators.product.Step;
+import obp3.runtime.sli.ISemanticRelation;
+import obp3.runtime.sli.Step;
 import soup.semantics.base.Environment;
 import soup.semantics.base.StatementSemantics;
 import soup.semantics.diagnosis.StepExpressionSemantics;
