@@ -30,10 +30,11 @@ test {
 }
 
 dependencies {
-    antlr group: 'org.antlr', name: 'antlr4', version: '4.13.2'
-    api project(':obp3-algos')
+    antlr 'org.antlr:antlr4:4.13.2'
+    implementation ('fr.ensta:obp3-algos:1.0.0')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
@@ -42,8 +43,8 @@ test {
 
 generateGrammarSource {
     outputDirectory = layout.buildDirectory.dir('generated-src/antlr/main/soup/parser').get().asFile
+    packageName = 'soup.parser'
     arguments = [
-            '-package', 'soup.parser',
             '-Xexact-output-dir'
     ]
 }
