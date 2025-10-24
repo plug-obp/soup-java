@@ -1,6 +1,6 @@
 package soup.modelchecker;
 
-import obp3.runtime.sli.ISemanticRelation;
+import obp3.runtime.sli.DependentSemanticRelation;
 import obp3.runtime.sli.SemanticRelation;
 import obp3.runtime.sli.Step;
 import obp3.traversal.dfs.DepthFirstTraversal;
@@ -37,7 +37,7 @@ public class SoupSoupModelChecker extends ModelChecker<AnonymousPiece, Environme
     }
 
     @Override
-    public ISemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> getPropertySemantics() {
+    public DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> getPropertySemantics() {
         return propertySoup == null ? null : new SoupStepDependentSemantics(propertySoup).pureSemantics();
     }
 

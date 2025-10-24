@@ -1,6 +1,6 @@
 package soup.semantics.dependent;
 
-import obp3.runtime.sli.ISemanticRelation;
+import obp3.runtime.sli.DependentSemanticRelation;
 import obp3.runtime.sli.Step;
 import soup.semantics.base.Environment;
 import soup.semantics.base.StatementSemantics;
@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SoupStepDependentSemantics implements ISemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> {
+public class SoupStepDependentSemantics implements DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> {
     Soup model;
     StepExpressionSemantics inputSemantics;
     StepDependentExpressionSemantics expressionSemantics;
@@ -64,8 +64,8 @@ public class SoupStepDependentSemantics implements ISemanticRelation<Step<Anonym
         );
     }
 
-    public ISemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> pureSemantics() {
-        return new ISemanticRelation<>() {
+    public DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> pureSemantics() {
+        return new DependentSemanticRelation<>() {
 
             @Override
             public List<Environment> initial() {
