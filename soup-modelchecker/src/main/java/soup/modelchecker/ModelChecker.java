@@ -4,7 +4,7 @@ import obp3.runtime.IExecutable;
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.modelchecking.buchi.ndfs.gs09.cdlp05.separated.EmptinessCheckerBuchiGS09CDLP05Separated;
 import obp3.modelchecking.safety.SafetyDephtFirstTraversal;
-import obp3.runtime.sli.ISemanticRelation;
+import obp3.runtime.sli.DependentSemanticRelation;
 import obp3.runtime.sli.SemanticRelation;
 import obp3.sli.core.operators.SemanticRelation2RootedGraph;
 import obp3.runtime.sli.Step;
@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 
 public abstract class ModelChecker<MA, MC, PA, PC> {
     public abstract SemanticRelation<MA, MC> getModelSemantics();
-    public abstract ISemanticRelation<Step<MA, MC>, PA, PC> getPropertySemantics();
+    public abstract DependentSemanticRelation<Step<MA, MC>, PA, PC> getPropertySemantics();
     public abstract boolean isBuchi();
     public abstract <X> Predicate<X> acceptingPredicate();
 
