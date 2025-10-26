@@ -7,6 +7,13 @@ version = '1.0.0'
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/plug-obp/obp3-core")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 java {
@@ -16,9 +23,9 @@ java {
 }
 
 dependencies {
-    implementation ('org.obpcdl:obp3-runtime:1.0.0')
-    implementation ('org.obpcdl:soup-core:1.0.0')
-    implementation ('org.obpcdl:obp3-algos:1.0.0')
+    implementation ('org.obpcdl:obp3-runtime:1.0.+')
+    implementation project(':soup-core')
+    implementation ('org.obpcdl:obp3-algos:1.0.+')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -36,3 +43,16 @@ test {
     jvmArgs += '--enable-preview'
     useJUnitPlatform()
 }
+
+// Publishing metadata (configuration inherited from root project)
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {
+                name = 'Soup Model-Checker'
+                description = 'Soup language OBP3 modelchecker '
+            }
+        }
+    }
+}
+

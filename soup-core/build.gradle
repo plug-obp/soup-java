@@ -8,6 +8,13 @@ version = '1.0.0'
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/plug-obp/obp3-core")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 java {
@@ -31,7 +38,7 @@ test {
 
 dependencies {
     antlr 'org.antlr:antlr4:4.13.2'
-    implementation ('org.obpcdl:obp3-runtime:1.0.0')
+    implementation ('org.obpcdl:obp3-runtime:1.0.+')
     implementation ('org.obpcdl:obp3-algos:1.0.0')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -57,4 +64,16 @@ generateGrammarSource {
 sourceSets.configureEach {
     var generateGrammarSource = tasks.named(getTaskName("generate", "GrammarSource"))
     java.srcDir(generateGrammarSource.map { files() })
+}
+
+// Publishing metadata (configuration inherited from root project)
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {
+                name = 'Soup Core'
+                description = 'Soup language core engine'
+            }
+        }
+    }
 }
