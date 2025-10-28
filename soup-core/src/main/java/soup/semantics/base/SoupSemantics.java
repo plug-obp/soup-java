@@ -14,8 +14,9 @@ public class SoupSemantics implements SemanticRelation<AnonymousPiece, Environme
     StatementSemantics statementSemantics;
 
     public SoupSemantics(Soup model) {
-        var expI = new ExpressionSemantics();
-        this(model, expI, new StatementSemantics(expI));
+        this.model = model;
+        this.expressionSemantics = new ExpressionSemantics();
+        this.statementSemantics = new StatementSemantics(this.expressionSemantics);
     }
 
     public SoupSemantics(Soup model, ExpressionSemantics expressionSemantics) {

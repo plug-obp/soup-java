@@ -21,18 +21,6 @@ java {
     }
 }
 
-compileJava {
-    options.compilerArgs.add('--enable-preview')
-}
-
-compileTestJava {
-    options.compilerArgs.add('--enable-preview')
-}
-
-test {
-    jvmArgs += '--enable-preview'
-}
-
 dependencies {
     antlr 'org.antlr:antlr4:4.13.2'
     implementation ('org.obpcdl:obp3-runtime:1.0.+')

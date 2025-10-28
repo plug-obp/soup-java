@@ -37,7 +37,6 @@ compileTestJava {
 }
 
 test {
-    jvmArgs += '--enable-preview'
     useJUnitPlatform()
 }
 
