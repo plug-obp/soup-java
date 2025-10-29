@@ -1,5 +1,9 @@
 package soup.modelchecker;
 
+import obp3.modelchecking.EmptinessCheckerAnswer;
+import obp3.modelchecking.tools.BuchiModelCheckerModel;
+import obp3.modelchecking.tools.ModelCheckerBuilder;
+import obp3.runtime.IExecutable;
 import obp3.runtime.sli.DependentSemanticRelation;
 import obp3.runtime.sli.SemanticRelation;
 import obp3.runtime.sli.Step;
@@ -18,43 +22,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.ParseException;
-import java.util.function.Predicate;
 
-public class SoupSoupModelChecker extends ModelChecker<AnonymousPiece, Environment, AnonymousPiece, Environment> {
-
+public class SoupSoupModelChecker {
     Soup modelSoup;
     Soup propertySoup;
     boolean isBuchi = false;
 
     Expression acceptingPredicateExpression;
 
+    BuchiModelCheckerModel.BuchiEmptinessCheckerAlgorithm emptinessCheckerAlgorithm;
     DepthFirstTraversal.Algorithm traversalAlgorithm;
     int depthBound;
-
-    @Override
-    public SemanticRelation<AnonymousPiece, Environment> getModelSemantics() {
-        return new SoupSemantics(modelSoup).pureSemantics();
-    }
-
-    @Override
-    public DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> getPropertySemantics() {
-        return propertySoup == null ? null : new SoupStepDependentSemantics(propertySoup).pureSemantics();
-    }
-
-    @Override
-    public boolean isBuchi() {
-        return isBuchi;
-    }
-
-    @Override
-    public Predicate<Environment> acceptingPredicate() {
-        return this::acceptingPredicateImp;
-    }
-
-    DiagnosisExpressionSemantics evaluator = new DiagnosisExpressionSemantics();
-    boolean acceptingPredicateImp(Environment c) {
-        return (boolean) evaluator.evaluate(acceptingPredicateExpression, c);
-    }
 
     public SoupSoupModelChecker(
             Soup modelSoup,
@@ -63,11 +41,42 @@ public class SoupSoupModelChecker extends ModelChecker<AnonymousPiece, Environme
             Expression acceptingPredicateExpression,
             DepthFirstTraversal.Algorithm traversal,
             int depthBound) {
-        super(traversal, depthBound);
         this.modelSoup = modelSoup;
         this.propertySoup = propertySoup;
         this.isBuchi = isBuchi;
         this.acceptingPredicateExpression = acceptingPredicateExpression;
+        this.traversalAlgorithm = traversal;
+        this.depthBound = depthBound;
+    }
+
+    public SemanticRelation<AnonymousPiece, Environment> getModelSemantics() {
+        return new SoupSemantics(modelSoup).pureSemantics();
+    }
+
+    public DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> getPropertySemantics() {
+        return propertySoup == null ? null : new SoupStepDependentSemantics(propertySoup).pureSemantics();
+    }
+
+    DiagnosisExpressionSemantics evaluator = new DiagnosisExpressionSemantics();
+    boolean acceptingPredicate(Environment c) {
+        return (boolean) evaluator.evaluate(acceptingPredicateExpression, c);
+    }
+
+    IExecutable<EmptinessCheckerAnswer<?>> modelChecker() {
+        var builder =
+                new ModelCheckerBuilder<AnonymousPiece, Environment, AnonymousPiece, Environment>()
+                    .modelSemantics(getModelSemantics())
+                    .propertySemantics(getPropertySemantics())
+                    .buchi(isBuchi)
+                    //.emptinessCheckerAlgorithm(emptinessCheckerAlgorithm)
+                    .traversalStrategy(traversalAlgorithm)
+                    .depthBound(depthBound);
+        if (getPropertySemantics() == null) {
+            builder.acceptingPredicateForModel(this::acceptingPredicate);
+        } else {
+            builder.acceptingPredicateForProduct((c) -> acceptingPredicate(c.r()));
+        }
+        return builder.modelChecker();
     }
 
     public static void main(String[] args) throws IOException, ParseException {
