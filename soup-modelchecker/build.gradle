@@ -20,9 +20,11 @@ java {
 }
 
 dependencies {
-    implementation ('org.obpcdl:obp3-runtime:1.0.+')
     implementation project(':soup-core')
-    implementation ('org.obpcdl:obp3-algos:1.0.+')
+    implementation 'org.obpcdl:obp3-runtime:1.0.+'
+    implementation 'org.obpcdl:obp3-algos:1.0.+'
+    implementation 'org.obpcdl:gpsl-core:1.0.4-main.+'
+    implementation 'org.obpcdl:gpsl-modelchecker:1.0.4-main.+'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

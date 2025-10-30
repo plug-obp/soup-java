@@ -17,6 +17,12 @@ public class StepEnvironment extends Environment {
         this.target = target;
     }
 
+    public StepEnvironment(Environment source, Optional<AnonymousPiece> action, Environment target) {
+        super(source);
+        this.action = action;
+        this.target = target;
+    }
+
     public StepEnvironment(Environment source, Environment target) {
         super(source);
         this.action = Optional.empty();

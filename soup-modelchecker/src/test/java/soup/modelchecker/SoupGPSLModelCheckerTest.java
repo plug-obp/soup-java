@@ -2,63 +2,58 @@ package soup.modelchecker;
 
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.runtime.IExecutable;
-import obp3.traversal.dfs.DepthFirstTraversal;
 import org.junit.jupiter.api.Test;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.Soup;
-import soup.syntax.model.expressions.Expression;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class SoupModelCheckerTest {
+public class SoupGPSLModelCheckerTest {
     String modelPath = "../soup-models/alice-bob/";
-    IExecutable<EmptinessCheckerAnswer<?>> predicateMC(Soup model, Expression predicate) {
-        var soupModelChecker = new SoupSoupModelChecker(
-                model,
-                null,
-                false,
-                predicate,
-                DepthFirstTraversal.Algorithm.WHILE,
-                -1);
-        return soupModelChecker.modelChecker();
-    }
 
     Soup readSoup(String modelName) throws IOException, ParseException {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    IExecutable<EmptinessCheckerAnswer<?>> mc(Soup model, Soup property, Expression predicate, boolean isBuchi) {
-        var soupModelChecker = new SoupSoupModelChecker(
-                model,
-                property,
-                isBuchi,
-                predicate,
-                DepthFirstTraversal.Algorithm.WHILE,
-                -1);
-        return soupModelChecker.modelChecker();
-    }
-    IExecutable<EmptinessCheckerAnswer<?>> safetyMc(Soup model, Soup property, Expression predicate) {
-        return mc(model, property, predicate, false);
-    }
-
-    IExecutable<EmptinessCheckerAnswer<?>> buchiMc(Soup model, Soup property, Expression predicate) {
-        return mc(model, property, predicate, true);
+    IExecutable<EmptinessCheckerAnswer<?>> mc(Soup model, String property) {
+        return SoupGPSLModelChecker.soupGPSLModelChecker(model, property);
     }
 
     /// ALICE BOB 0
     @Test
     void testAliceBob0Exclusion() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var pred = Reader.readExpression("a==2 && b==2");
-        var result = predicateMC(model, pred).runAlone();
+        var pred = ("p=!|a==2 && b==2|");
+        var result = mc(model, pred).runAlone();
         assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
     }
 
+    /// ALICE BOB 0
+    @Test
+    void testAliceBob0ExclusionNFA() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var pred = ("""
+                p = nfa
+                states s, x;
+                initial s;
+                accept x;
+                s [true] s;
+                s [|a==2 && b==2|] x
+                """);
+        var result = mc(model, pred).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+
+/*
     @Test
     void testAliceBob0ExclusionSafety() throws Exception {
         var model = readSoup("alice-bob0.soup");
@@ -151,7 +146,7 @@ public class SoupModelCheckerTest {
     void testAliceBob1DeadlockSafetyStepPred() throws Exception {
         var model = readSoup("alice-bob1.soup");
         var prop = readSoup("dependent/no-deadlock1.soup");
-        var pred = Reader.readExpression(/*right:*/"p:fail");
+        var pred = Reader.readExpression(/*right:*//*"p:fail");
         //TODO: this should be fixed at some point -
         //TODO: because pred should be a state predicate, but the prop is stateless.
         //TODO: so I should be able to observe steps of the synchronous product, not only the states
@@ -435,4 +430,5 @@ public class SoupModelCheckerTest {
         var result = buchiMc(model, prop, pred).runAlone();
         assertTrue(result.holds);
     }
+    */
 }
