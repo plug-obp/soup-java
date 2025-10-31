@@ -11,8 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SoupGPSLModelCheckerTest {
     String modelPath = "../soup-models/alice-bob/";
@@ -52,53 +51,124 @@ public class SoupGPSLModelCheckerTest {
         assertEquals(6, result.trace.size());
     }
 
-
-/*
-    @Test
-    void testAliceBob0ExclusionSafety() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var prop = readSoup("dependent/exclusion.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
-        assertFalse(result.holds);
-    }
-
+    /// There is no deadlock in v0
     @Test
     void testAliceBob0Deadlock() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var pred = Reader.readExpression("deadlock");
-        var result = predicateMC(model, pred).runAlone();
+        var pred = "p=!|deadlock|";
+        var result = mc(model, pred).runAlone();
         assertTrue(result.holds);
     }
 
-    @Test
-    void testAliceBob0DeadlockSafety() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var prop = readSoup("dependent/no-deadlock.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
-        assertTrue(result.holds);
-        System.out.println(result);
-    }
-
+    ///  At least one gets to the critical section
     @Test
     void testAliceBob0BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var prop = readSoup("dependent/buchi_eventuallyOneInCS.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var pred = ("""
+                p =
+                states s, x;
+                initial s;
+                accept x;
+                s [true] s;
+                s [!|a==2| ∧ !|b==2|] x;
+                x [!|a==2| ∧ !|b==2|] x
+                """);
+        var result = mc(model, pred).runAlone();
         assertTrue(result.holds);
     }
 
+    ///  LTL: At least one gets to the critical section
+    @Test
+    void testAliceBob0BuchiOneInLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var pred = ("""
+                p = ![]<> (|a==2| or |b==2|)
+                """);
+        var result = mc(model, pred).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// if one wants in it eventually gets in
     @Test
     void testAliceBob0BuchiFairness() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var prop = readSoup("dependent/buchi_fairness.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var pred = ("""
+                p =
+                states s, xA, xB;
+                initial s;
+                accept xA, xB;
+                s [true] s; //ok
+                s [|a==1| ∧ !|a==2|] xA; //aWantsIn
+                xA [!|a==2|] xA; //aNotIn
+                s [|b==1| ∧ !|b==2|] xB; //bWantsIn
+                xB [!|b==2|] xB //bNotIn
+                """);
+        var result = mc(model, pred).runAlone();
         assertFalse(result.holds);
     }
 
+    /// LTL if one wants in it eventually gets in
+    @Test
+    void testAliceBob0BuchiFairnessLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var pred = ("""
+                p =![](  (|a==1| -> <> |a==2|)
+                       ∧ (|b==1| -> <> |b==2|))
+                """);
+        var result = mc(model, pred).runAlone();
+        assertFalse(result.holds);
+    }
+
+    @Test
+    void testAliceBob0BuchiIdling() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var pred = """
+                idling = let
+                		aU=|a==1|,
+                		aC = |a==2|,
+                		bU=|b==1|,
+                		bC = |b==2|
+                	in
+                		states s0, s1, s2, s3, s4;
+                		initial s0;
+                		accept s1;
+                		s0 [(aC & !aU) ∨ (bC & !bU)] s1;
+                		s0 [(!aC & !aU & bU) ∨ (!aC & !aU & !bC)] s2;
+                		s0 [(aU & !bC & !bU) ∨ (!aC & !bC & !bU)] s3;
+                		s0 [(aU & bU) ∨ (aU & !bC)] s4;
+                		s1 [true] s1;
+                		s2 [!aC] s2;
+                		s2 [aC] s1;
+                		s3 [!bC] s3;
+                		s3 [bC] s1;
+                		s4 [aU] s4;
+                		s4 [!aC & !aU] s2;
+                		s4 [aC & !aU] s1
+                """;
+
+        var result = mc(model, pred).runAlone();
+        assertFalse(result.holds);
+    }
+
+    @Test
+    void testAliceBob0BuchiIdlingLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var pred = """
+                idling = let
+                		aliceFlagUP=|a==1|,
+                		aliceCS = |a==2|,
+                		bobFlagUP=|b==1|,
+                		bobCS = |b==2|
+                	in
+                		!([]   (!aliceFlagUP -> (!<> aliceCS))
+                		    && (!bobFlagUP   -> (!<> bobCS  )) )
+                """;
+
+        var result = mc(model, pred).runAlone();
+        assertFalse(result.holds);
+    }
+
+/*
     @Test
     void testAliceBob0BuchiIdling() throws Exception {
         var model = readSoup("alice-bob0.soup");
