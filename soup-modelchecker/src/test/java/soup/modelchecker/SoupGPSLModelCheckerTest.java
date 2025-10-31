@@ -24,47 +24,34 @@ public class SoupGPSLModelCheckerTest {
         return SoupGPSLModelChecker.soupGPSLModelChecker(model, property);
     }
 
-    /// ALICE BOB 0
-    @Test
-    void testAliceBob0Exclusion() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = ("p=!|a==2 && b==2|");
-        var result = mc(model, pred).runAlone();
-        assertFalse(result.holds);
-        assertEquals(6, result.trace.size());
-    }
-
-    /// ALICE BOB 0
-    @Test
-    void testAliceBob0ExclusionNFA() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = ("""
+    final String exclusionPred = "p=!|a==2 && b==2|";
+    final String exclusionNFA = """
                 p = nfa
                 states s, x;
                 initial s;
                 accept x;
                 s [true] s;
                 s [|a==2 && b==2|] x
-                """);
-        var result = mc(model, pred).runAlone();
-        assertFalse(result.holds);
-        assertEquals(6, result.trace.size());
-    }
+                """;
+    final String exclusionLTL = """
+            p = ! [] ! |a==2 && b==2|
+            """;
+    final String exclusionBuchi = """
+            p = let p = |a==2| && |b==2| in
+            buchi
+                states s, x;
+                initial s;
+                accept x;
+                s [!p] s;
+                s [p] x;
+                x [true] x
+            """;
 
-    /// There is no deadlock in v0
-    @Test
-    void testAliceBob0Deadlock() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = "p=!|deadlock|";
-        var result = mc(model, pred).runAlone();
-        assertTrue(result.holds);
-    }
+    final String noDeadlockPred = "p=!|deadlock|";
+    final String noDeadlockLTL = "p=! G !|deadlock|";
 
-    ///  At least one gets to the critical section
-    @Test
-    void testAliceBob0BuchiOneIn() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = ("""
+    final String atLeastOneInLTL = "p = ![]<> (|a==2| or |b==2|)";
+    final String atLeastOneInBuchi = """
                 p =
                 states s, x;
                 initial s;
@@ -72,27 +59,14 @@ public class SoupGPSLModelCheckerTest {
                 s [true] s;
                 s [!|a==2| ∧ !|b==2|] x;
                 x [!|a==2| ∧ !|b==2|] x
-                """);
-        var result = mc(model, pred).runAlone();
-        assertTrue(result.holds);
-    }
+                """;
 
-    ///  LTL: At least one gets to the critical section
-    @Test
-    void testAliceBob0BuchiOneInLTL() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = ("""
-                p = ![]<> (|a==2| or |b==2|)
-                """);
-        var result = mc(model, pred).runAlone();
-        assertTrue(result.holds);
-    }
+    final String fairnessLTL = """
+                p =![](  (|a==1| -> <> |a==2|)
+                       ∧ (|b==1| -> <> |b==2|))
+                """;
 
-    /// if one wants in it eventually gets in
-    @Test
-    void testAliceBob0BuchiFairness() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = ("""
+    final String fairnessBuchi = """
                 p =
                 states s, xA, xB;
                 initial s;
@@ -102,27 +76,20 @@ public class SoupGPSLModelCheckerTest {
                 xA [!|a==2|] xA; //aNotIn
                 s [|b==1| ∧ !|b==2|] xB; //bWantsIn
                 xB [!|b==2|] xB //bNotIn
-                """);
-        var result = mc(model, pred).runAlone();
-        assertFalse(result.holds);
-    }
+                """;
 
-    /// LTL if one wants in it eventually gets in
-    @Test
-    void testAliceBob0BuchiFairnessLTL() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = ("""
-                p =![](  (|a==1| -> <> |a==2|)
-                       ∧ (|b==1| -> <> |b==2|))
-                """);
-        var result = mc(model, pred).runAlone();
-        assertFalse(result.holds);
-    }
+    final String idlingLTL = """
+                idling = let
+                		aliceFlagUP=|a==1|,
+                		aliceCS = |a==2|,
+                		bobFlagUP=|b==1|,
+                		bobCS = |b==2|
+                	in
+                		!([]   (!aliceFlagUP -> (!<> aliceCS))
+                		    && (!bobFlagUP   -> (!<> bobCS  )) )
+                """;
 
-    @Test
-    void testAliceBob0BuchiIdling() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var pred = """
+    final String idlingBuchi = """
                 idling = let
                 		aU=|a==1|,
                 		aC = |a==2|,
@@ -146,359 +113,559 @@ public class SoupGPSLModelCheckerTest {
                 		s4 [aC & !aU] s1
                 """;
 
-        var result = mc(model, pred).runAlone();
+    /// ALICE BOB 0
+    @Test
+    void testAliceBob0ExclusionPred() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, exclusionPred).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+    @Test
+    void testAliceBob0ExclusionNFA() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, exclusionNFA).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+    @Test
+    void testAliceBob0ExclusionLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, exclusionLTL).runAlone();
+        assertFalse(result.holds);
+        assertEquals(9, result.trace.size());
+    }
+
+    @Test
+    void testAliceBob0ExclusionBuchi() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, exclusionBuchi).runAlone();
+        assertFalse(result.holds);
+        assertEquals(9, result.trace.size());
+    }
+
+    /// There is no deadlock in v0
+    @Test
+    void testAliceBob0DeadlockPred() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, noDeadlockPred).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob0DeadlockLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, noDeadlockLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    ///  At least one gets to the critical section
+    @Test
+    void testAliceBob0BuchiOneIn() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, atLeastOneInBuchi).runAlone();
+        assertTrue(result.holds);
+    }
+
+    ///  LTL: At least one gets to the critical section
+    @Test
+    void testAliceBob0BuchiOneInLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, atLeastOneInLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// if one wants in it eventually gets in
+    @Test
+    void testAliceBob0BuchiFairnessBuchi() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, fairnessBuchi).runAlone();
+        assertFalse(result.holds);
+    }
+
+    /// LTL if one wants in it eventually gets in
+    @Test
+    void testAliceBob0BuchiFairnessLTL() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+        var result = mc(model, fairnessLTL).runAlone();
+        assertFalse(result.holds);
+    }
+
+    /// if one does not want to go it wont go
+    @Test
+    void testAliceBob0BuchiIdlingBuchi() throws Exception {
+        var model = readSoup("alice-bob0.soup");
+
+        var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob0BuchiIdlingLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var pred = """
-                idling = let
-                		aliceFlagUP=|a==1|,
-                		aliceCS = |a==2|,
-                		bobFlagUP=|b==1|,
-                		bobCS = |b==2|
-                	in
-                		!([]   (!aliceFlagUP -> (!<> aliceCS))
-                		    && (!bobFlagUP   -> (!<> bobCS  )) )
-                """;
 
-        var result = mc(model, pred).runAlone();
+        var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
     }
 
-/*
-    @Test
-    void testAliceBob0BuchiIdling() throws Exception {
-        var model = readSoup("alice-bob0.soup");
-        var prop = readSoup("dependent/buchi_idling.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
-        assertTrue(result.holds);
-    }
     /// ALICE BOB 1
     @Test
-    void testAliceBob1Exclusion() throws Exception {
+    void testAliceBob1ExclusionPred() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var pred = Reader.readExpression("a==2 && b==2");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionPred).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob1ExclusionSafety() throws Exception {
+    void testAliceBob1ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var prop = readSoup("dependent/exclusion.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionNFA).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob1Deadlock() throws Exception {
+    void testAliceBob1ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var pred = Reader.readExpression("deadlock");
-        var result = predicateMC(model, pred).runAlone();
-        assertFalse(result.holds);
+        var result = mc(model, exclusionLTL).runAlone();
+        assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob1DeadlockSafety() throws Exception {
+    void testAliceBob1ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var prop = readSoup("dependent/no-deadlock.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionBuchi).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// There is a deadlock in v1
+    @Test
+    void testAliceBob1DeadlockPred() throws Exception {
+        var model = readSoup("alice-bob1.soup");
+        var result = mc(model, noDeadlockPred).runAlone();
         assertFalse(result.holds);
+        assertEquals(4, result.trace.size());
     }
 
     @Test
-    void testAliceBob1DeadlockSafetyStepPred() throws Exception {
+    void testAliceBob1DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var prop = readSoup("dependent/no-deadlock1.soup");
-        var pred = Reader.readExpression(/*right:*//*"p:fail");
-        //TODO: this should be fixed at some point -
-        //TODO: because pred should be a state predicate, but the prop is stateless.
-        //TODO: so I should be able to observe steps of the synchronous product, not only the states
-        assertThrows(NullPointerException.class, () -> safetyMc(model, prop, pred).runAlone());
-//        var result = safetyMc(model, prop, pred).runAlone();
-//        assertFalse(result.holds);
+        var result = mc(model, noDeadlockLTL).runAlone();
+        assertFalse(result.holds);
+        assertEquals(5, result.trace.size());
     }
 
+    ///  At least one gets to the critical section
     @Test
     void testAliceBob1BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var prop = readSoup("dependent/buchi_eventuallyOneInCS.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInBuchi).runAlone();
+        assertFalse(result.holds);
+    }
+
+    ///  LTL: At least one gets to the critical section
+    @Test
+    void testAliceBob1BuchiOneInLTL() throws Exception {
+        var model = readSoup("alice-bob1.soup");
+        var result = mc(model, atLeastOneInLTL).runAlone();
+        assertFalse(result.holds);
+    }
+
+    /// if one wants in it eventually gets in
+    @Test
+    void testAliceBob1BuchiFairnessBuchi() throws Exception {
+        var model = readSoup("alice-bob1.soup");
+        var result = mc(model, fairnessBuchi).runAlone();
+        assertFalse(result.holds);
+    }
+
+    /// LTL if one wants in it eventually gets in
+    @Test
+    void testAliceBob1BuchiFairnessLTL() throws Exception {
+        var model = readSoup("alice-bob1.soup");
+        var result = mc(model, fairnessLTL).runAlone();
+        assertFalse(result.holds);
+    }
+
+    /// if one does not want to go it wont go
+    @Test
+    void testAliceBob1BuchiIdlingBuchi() throws Exception {
+        var model = readSoup("alice-bob1.soup");
+        var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob1BuchiFairness() throws Exception {
+    void testAliceBob1BuchiIdlingLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var prop = readSoup("dependent/buchi_fairness.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
-    }
-
-    @Test
-    void testAliceBob1BuchiIdling() throws Exception {
-        var model = readSoup("alice-bob1.soup");
-        var prop = readSoup("dependent/buchi_idling.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
-        assertTrue(result.holds);
     }
 
     /// ALICE BOB 2
     @Test
-    void testAliceBob2Exclusion() throws Exception {
+    void testAliceBob2ExclusionPred() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var pred = Reader.readExpression("a==2 && b==2");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionPred).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob2ExclusionSafety() throws Exception {
+    void testAliceBob2ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var prop = readSoup("dependent/exclusion.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionNFA).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob2Deadlock() throws Exception {
+    void testAliceBob2ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var pred = Reader.readExpression("deadlock");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionLTL).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob2DeadlockSafety() throws Exception {
+    void testAliceBob2ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var prop = readSoup("dependent/no-deadlock.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionBuchi).runAlone();
         assertTrue(result.holds);
     }
 
+    /// There is no deadlock in v2
+    @Test
+    void testAliceBob2DeadlockPred() throws Exception {
+        var model = readSoup("alice-bob2.soup");
+        var result = mc(model, noDeadlockPred).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob2DeadlockLTL() throws Exception {
+        var model = readSoup("alice-bob2.soup");
+        var result = mc(model, noDeadlockLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    ///  At least one gets to the critical section
     @Test
     void testAliceBob2BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var prop = readSoup("dependent/buchi_eventuallyOneInCS.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInBuchi).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+    ///  LTL: At least one gets to the critical section
+    @Test
+    void testAliceBob2BuchiOneInLTL() throws Exception {
+        var model = readSoup("alice-bob2.soup");
+        var result = mc(model, atLeastOneInLTL).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+    /// if one wants in it eventually gets in
+    @Test
+    void testAliceBob2BuchiFairnessBuchi() throws Exception {
+        var model = readSoup("alice-bob2.soup");
+        var result = mc(model, fairnessBuchi).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+    /// LTL if one wants in it eventually gets in
+    @Test
+    void testAliceBob2BuchiFairnessLTL() throws Exception {
+        var model = readSoup("alice-bob2.soup");
+        var result = mc(model, fairnessLTL).runAlone();
+        assertFalse(result.holds);
+        assertEquals(6, result.trace.size());
+    }
+
+    /// if one does not want to go it wont go
+    @Test
+    void testAliceBob2BuchiIdlingBuchi() throws Exception {
+        var model = readSoup("alice-bob2.soup");
+        var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob2BuchiFairness() throws Exception {
+    void testAliceBob2BuchiIdlingLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var prop = readSoup("dependent/buchi_fairness.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
-    }
-
-    @Test
-    void testAliceBob2BuchiIdling() throws Exception {
-        var model = readSoup("alice-bob2.soup");
-        var prop = readSoup("dependent/buchi_idling.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
-        assertTrue(result.holds);
     }
 
     /// ALICE BOB 3
     @Test
-    void testAliceBob3Exclusion() throws Exception {
+    void testAliceBob3ExclusionPred() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var pred = Reader.readExpression("a==2 && b==2");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionPred).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob3ExclusionSafety() throws Exception {
+    void testAliceBob3ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var prop = readSoup("dependent/exclusion.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionNFA).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob3Deadlock() throws Exception {
+    void testAliceBob3ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var pred = Reader.readExpression("deadlock");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionLTL).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob3DeadlockSafety() throws Exception {
+    void testAliceBob3ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var prop = readSoup("dependent/no-deadlock.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionBuchi).runAlone();
         assertTrue(result.holds);
     }
 
+    /// There is no deadlock in v3
+    @Test
+    void testAliceBob3DeadlockPred() throws Exception {
+        var model = readSoup("alice-bob3.soup");
+        var result = mc(model, noDeadlockPred).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob3DeadlockLTL() throws Exception {
+        var model = readSoup("alice-bob3.soup");
+        var result = mc(model, noDeadlockLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    ///  At least one gets to the critical section ok in v3
     @Test
     void testAliceBob3BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var prop = readSoup("dependent/buchi_eventuallyOneInCS.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob3BuchiFairness() throws Exception {
+    void testAliceBob3BuchiOneInLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var prop = readSoup("dependent/buchi_fairness.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// if one wants in it eventually gets in fails in v3
+    @Test
+    void testAliceBob3BuchiFairnessBuchi() throws Exception {
+        var model = readSoup("alice-bob3.soup");
+        var result = mc(model, fairnessBuchi).runAlone();
+        assertFalse(result.holds);
+        assertEquals(7, result.trace.size());
+    }
+
+    @Test
+    void testAliceBob3BuchiFairnessLTL() throws Exception {
+        var model = readSoup("alice-bob3.soup");
+        var result = mc(model, fairnessLTL).runAlone();
+        assertFalse(result.holds);
+        assertEquals(7, result.trace.size());
+    }
+
+    /// if one does not want to go it wont go
+    @Test
+    void testAliceBob3BuchiIdlingBuchi() throws Exception {
+        var model = readSoup("alice-bob3.soup");
+        var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob3BuchiIdling() throws Exception {
+    void testAliceBob3BuchiIdlingLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var prop = readSoup("dependent/buchi_idling.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
-        assertTrue(result.holds);
+        var result = mc(model, idlingLTL).runAlone();
+        assertFalse(result.holds);
     }
 
     /// ALICE BOB 4
     @Test
-    void testAliceBob4Exclusion() throws Exception {
+    void testAliceBob4ExclusionPred() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var pred = Reader.readExpression("a==2 && b==2");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionPred).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4ExclusionSafety() throws Exception {
+    void testAliceBob4ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var prop = readSoup("dependent/exclusion.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionNFA).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4Deadlock() throws Exception {
+    void testAliceBob4ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var pred = Reader.readExpression("deadlock");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionLTL).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4DeadlockSafety() throws Exception {
+    void testAliceBob4ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var prop = readSoup("dependent/no-deadlock.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionBuchi).runAlone();
         assertTrue(result.holds);
     }
 
+    /// There is no deadlock in v3
+    @Test
+    void testAliceBob4DeadlockPred() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, noDeadlockPred).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob4DeadlockLTL() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, noDeadlockLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    ///  At least one gets to the critical section ok in v3
     @Test
     void testAliceBob4BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var prop = readSoup("dependent/buchi_eventuallyOneInCS.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4BuchiFairness() throws Exception {
+    void testAliceBob4BuchiOneInLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var prop = readSoup("dependent/buchi_fairness.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// if one wants in it eventually gets in fails in v3
+    @Test
+    void testAliceBob4BuchiFairnessBuchi() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, fairnessBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4BuchiIdling() throws Exception {
+    void testAliceBob4BuchiFairnessLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var prop = readSoup("dependent/buchi_idling.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, fairnessLTL).runAlone();
         assertTrue(result.holds);
+    }
+
+    /// if one does not want to go it wont go
+    /// TODO: Why does this property fail here ?
+    @Test
+    void testAliceBob4BuchiIdlingBuchi() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, idlingBuchi).runAlone();
+        assertFalse(result.holds);
+    }
+
+    @Test
+    void testAliceBob4BuchiIdlingLTL() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, idlingLTL).runAlone();
+        assertFalse(result.holds);
     }
 
     /// ALICE BOB 5
     @Test
-    void testAliceBob5Exclusion() throws Exception {
+    void testAliceBob5ExclusionPred() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var pred = Reader.readExpression("a==2 && b==2");
-        var result = predicateMC(model, pred).runAlone();
-        System.out.println(result);
+        var result = mc(model, exclusionPred).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5ExclusionSafety() throws Exception {
+    void testAliceBob5ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var prop = readSoup("dependent/exclusion.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionNFA).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5Deadlock() throws Exception {
+    void testAliceBob5ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var pred = Reader.readExpression("deadlock");
-        var result = predicateMC(model, pred).runAlone();
+        var result = mc(model, exclusionLTL).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5DeadlockSafety() throws Exception {
+    void testAliceBob5ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var prop = readSoup("dependent/no-deadlock.soup");
-        var pred = Reader.readExpression("!status");
-        var result = safetyMc(model, prop, pred).runAlone();
+        var result = mc(model, exclusionBuchi).runAlone();
         assertTrue(result.holds);
     }
 
+    /// There is no deadlock in v3
+    @Test
+    void testAliceBob5DeadlockPred() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var result = mc(model, noDeadlockPred).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob5DeadlockLTL() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var result = mc(model, noDeadlockLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    ///  At least one gets to the critical section ok in v3
     @Test
     void testAliceBob5BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var prop = readSoup("dependent/buchi_eventuallyOneInCS.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5BuchiFairness() throws Exception {
+    void testAliceBob5BuchiOneInLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var prop = readSoup("dependent/buchi_fairness.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, atLeastOneInLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// if one wants in it eventually gets in fails in v3
+    @Test
+    void testAliceBob5BuchiFairnessBuchi() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var result = mc(model, fairnessBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5BuchiIdling() throws Exception {
+    void testAliceBob5BuchiFairnessLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var prop = readSoup("dependent/buchi_idling.soup");
-        var pred = Reader.readExpression("!status");
-        var result = buchiMc(model, prop, pred).runAlone();
+        var result = mc(model, fairnessLTL).runAlone();
         assertTrue(result.holds);
     }
-    */
+
+    /// if one does not want to go it wont go
+    /// TODO: Why does this property fail here ?
+    @Test
+    void testAliceBob5BuchiIdlingBuchi() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var result = mc(model, idlingBuchi).runAlone();
+        assertFalse(result.holds);
+    }
+
+    @Test
+    void testAliceBob5BuchiIdlingLTL() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var result = mc(model, idlingLTL).runAlone();
+        assertFalse(result.holds);
+    }
 }
