@@ -1,5 +1,6 @@
 package soup.modelchecker;
 
+import gpsl.semantics.AutomatonSemantics;
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.runtime.IExecutable;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,8 @@ public class SoupGPSLModelCheckerTest {
     final String noDeadlockPred = "p=!|deadlock|";
     final String noDeadlockLTL = "p=! G !|deadlock|";
 
+
+    /// recurrence: Alice or Bob will enter the critical section infinitely often
     final String atLeastOneInLTL = "p = ![]<> (|a==2| or |b==2|)";
     final String atLeastOneInBuchi = """
                 p =
@@ -61,12 +64,13 @@ public class SoupGPSLModelCheckerTest {
                 x [!|a==2| ∧ !|b==2|] x
                 """;
 
-    final String fairnessLTL = """
+    /// If a process wants to enter (flag up), it will eventually get to the CS.
+    final String livenessLTL = """
                 p =![](  (|a==1| -> <> |a==2|)
                        ∧ (|b==1| -> <> |b==2|))
                 """;
 
-    final String fairnessBuchi = """
+    final String livenessBuchi = """
                 p =
                 states s, xA, xB;
                 initial s;
@@ -78,39 +82,103 @@ public class SoupGPSLModelCheckerTest {
                 xB [!|b==2|] xB //bNotIn
                 """;
 
+    /// If the other process is idle (does not wish to enter its critical section),
+    /// a waiting process should eventually succeed in entering the critical section.
+    /// When A is waiting (a == 1) and B is not interested (dB == false),
+    /// A must eventually enter its critical section (a == 2).
     final String idlingLTL = """
-                idling = let
+            idling = let
+                aIsWaiting = |a==1|,
+                bNotInterested = |b==0|,
+                aInCriticalSection = |a==2|,
+                bIsWaiting = |b==1|,
+                aNotInterested = |a==0|,
+                bInCriticalSection = |b==2|
+                in ! G (
+                            (( aIsWaiting ∧ bNotInterested)→ F aInCriticalSection)
+                           ∧(( bIsWaiting ∧ aNotInterested)→ F bInCriticalSection))
+            """;
+
+    final String idlingBuchi = """
+            idling = let
+                aIsWaiting = |a==1|,
+                bNotInterested = |b==0|,
+                aInCriticalSection = |a==2|,
+                bIsWaiting = |b==1|,
+                aNotInterested = |a==0|,
+                bInCriticalSection = |b==2|
+            in buchi
+                states s0, s1, s2;
+                initial s0;
+                accept s1, s2;
+                s0 [true] s0;
+                s0 [!aInCriticalSection & aIsWaiting & bNotInterested] s1;
+                s0 [!bInCriticalSection & bIsWaiting & aNotInterested] s2;
+                s1 [!aInCriticalSection] s1;
+                s2 [!bInCriticalSection] s2
+            """;
+
+    final String idlingWithFlagsLTL = """
+            idling = let
+                aIsWaiting = |a==1|,
+                bNotInterested = |dB==false|,
+                aInCriticalSection = |a==2|,
+                bIsWaiting = |b==1|,
+                aNotInterested = |dA==false|,
+                bInCriticalSection = |b==2|
+                in ! G (
+                            (( aIsWaiting ∧ bNotInterested)→ F aInCriticalSection)
+                           ∧(( bIsWaiting ∧ aNotInterested)→ F bInCriticalSection))
+            """;
+
+    /// Flag discipline
+    /// No process can enter its critical section unless it has previously raised its flag.
+    /// LIMITATION: if we want to express this without flags, we need one of the following:
+    ///     - the past LTL operator -- currently, GPSL does not support past LTL operators
+    ///     - instrument the model (to remember the intention of a process to enter the CS) -- the flags do just this
+    ///     - a buchi automata that captures the intention to enter either:
+    ///             - using a witness variable that stores the intention -- currently, GPSL does not allow variable definition (dependent Soup does)
+    ///             - encoding the intention in the state-space of the buchi automata -- we could do that with GPSL, but it's messy.
+    final String flagDisciplineLTL = """
+                flagDiscipline = let
                 		aliceFlagUP=|a==1|,
                 		aliceCS = |a==2|,
                 		bobFlagUP=|b==1|,
                 		bobCS = |b==2|
                 	in
-                		!([]   (!aliceFlagUP -> (!<> aliceCS))
-                		    && (!bobFlagUP   -> (!<> bobCS  )) )
+                		!([]   (aliceCS -> P aliceFlagUP) //P is the past operator, currently unsupported
+                		    && (bobCS   -> P bobFlagUP  ) )
                 """;
 
-    final String idlingBuchi = """
-                idling = let
-                		aU=|a==1|,
-                		aC = |a==2|,
-                		bU=|b==1|,
-                		bC = |b==2|
+    /// Flag discipline with flags
+    /// No process can enter its critical section unless it has previously raised its flag.
+    /// Whenever a process is in its critical section, its flag must have been raised (it must have wanted to enter)
+    final String flagDisciplineWithFlagsLTL = """
+                flagDiscipline = let
+                		aliceFlagUP=|dA|,
+                		aliceCS = |a==2|,
+                		bobFlagUP=|dB|,
+                		bobCS = |b==2|
                 	in
-                		states s0, s1, s2, s3, s4;
-                		initial s0;
-                		accept s1;
-                		s0 [(aC & !aU) ∨ (bC & !bU)] s1;
-                		s0 [(!aC & !aU & bU) ∨ (!aC & !aU & !bC)] s2;
-                		s0 [(aU & !bC & !bU) ∨ (!aC & !bC & !bU)] s3;
-                		s0 [(aU & bU) ∨ (aU & !bC)] s4;
-                		s1 [true] s1;
-                		s2 [!aC] s2;
-                		s2 [aC] s1;
-                		s3 [!bC] s3;
-                		s3 [bC] s1;
-                		s4 [aU] s4;
-                		s4 [!aC & !aU] s2;
-                		s4 [aC & !aU] s1
+                		!([]   (aliceCS -> aliceFlagUP)
+                		    && (bobCS   -> bobFlagUP  ) )
+                """;
+
+    final String flagDisciplineWithFlagsBuchi = """
+                idling = let
+                		aliceFlagUP=|dA|,
+                		aliceCS = |a==2|,
+                		bobFlagUP=|dB|,
+                		bobCS = |b==2|
+                	in
+                		states s0, s1, s2;
+                		initial s2;
+                		accept s0;
+                		s2 [(bobCS & !bobFlagUP) || (aliceCS & !aliceFlagUP)] s0;
+                		s2 [(!aliceCS & !bobCS) || (aliceFlagUP & !bobCS) || (!aliceCS & bobFlagUP) || (aliceFlagUP & bobFlagUP)] s1;
+                		s1 [!aliceCS || aliceFlagUP] s1;
+                		s1 [aliceCS & !aliceFlagUP] s0;
+                		s0 [true] s0
                 """;
 
     /// ALICE BOB 0
@@ -163,7 +231,7 @@ public class SoupGPSLModelCheckerTest {
 
     ///  At least one gets to the critical section
     @Test
-    void testAliceBob0BuchiOneIn() throws Exception {
+    void testAliceBob0OneInBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
         var result = mc(model, atLeastOneInBuchi).runAlone();
         assertTrue(result.holds);
@@ -171,7 +239,7 @@ public class SoupGPSLModelCheckerTest {
 
     ///  LTL: At least one gets to the critical section
     @Test
-    void testAliceBob0BuchiOneInLTL() throws Exception {
+    void testAliceBob0OneInLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
         var result = mc(model, atLeastOneInLTL).runAlone();
         assertTrue(result.holds);
@@ -179,33 +247,30 @@ public class SoupGPSLModelCheckerTest {
 
     /// if one wants in it eventually gets in
     @Test
-    void testAliceBob0BuchiFairnessBuchi() throws Exception {
+    void testAliceBob0LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, fairnessBuchi).runAlone();
+        var result = mc(model, livenessBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     /// LTL if one wants in it eventually gets in
     @Test
-    void testAliceBob0BuchiFairnessLTL() throws Exception {
+    void testAliceBob0LivenessLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, fairnessLTL).runAlone();
+        var result = mc(model, livenessLTL).runAlone();
         assertFalse(result.holds);
     }
 
-    /// if one does not want to go it wont go
     @Test
-    void testAliceBob0BuchiIdlingBuchi() throws Exception {
+    void testAliceBob0IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
-
         var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob0BuchiIdlingLTL() throws Exception {
+    void testAliceBob0IdlingLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-
         var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
     }
@@ -258,7 +323,7 @@ public class SoupGPSLModelCheckerTest {
 
     ///  At least one gets to the critical section
     @Test
-    void testAliceBob1BuchiOneIn() throws Exception {
+    void testAliceBob1OneInBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
         var result = mc(model, atLeastOneInBuchi).runAlone();
         assertFalse(result.holds);
@@ -266,7 +331,7 @@ public class SoupGPSLModelCheckerTest {
 
     ///  LTL: At least one gets to the critical section
     @Test
-    void testAliceBob1BuchiOneInLTL() throws Exception {
+    void testAliceBob1OneInLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
         var result = mc(model, atLeastOneInLTL).runAlone();
         assertFalse(result.holds);
@@ -274,30 +339,29 @@ public class SoupGPSLModelCheckerTest {
 
     /// if one wants in it eventually gets in
     @Test
-    void testAliceBob1BuchiFairnessBuchi() throws Exception {
+    void testAliceBob1LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, fairnessBuchi).runAlone();
+        var result = mc(model, livenessBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     /// LTL if one wants in it eventually gets in
     @Test
-    void testAliceBob1BuchiFairnessLTL() throws Exception {
+    void testAliceBob1LivenessLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, fairnessLTL).runAlone();
+        var result = mc(model, livenessLTL).runAlone();
         assertFalse(result.holds);
     }
 
-    /// if one does not want to go it wont go
     @Test
-    void testAliceBob1BuchiIdlingBuchi() throws Exception {
+    void testAliceBob1IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
         var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob1BuchiIdlingLTL() throws Exception {
+    void testAliceBob1IdlingLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
         var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
@@ -349,7 +413,7 @@ public class SoupGPSLModelCheckerTest {
 
     ///  At least one gets to the critical section
     @Test
-    void testAliceBob2BuchiOneIn() throws Exception {
+    void testAliceBob2OneInBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
         var result = mc(model, atLeastOneInBuchi).runAlone();
         assertFalse(result.holds);
@@ -358,7 +422,7 @@ public class SoupGPSLModelCheckerTest {
 
     ///  LTL: At least one gets to the critical section
     @Test
-    void testAliceBob2BuchiOneInLTL() throws Exception {
+    void testAliceBob2OneInLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
         var result = mc(model, atLeastOneInLTL).runAlone();
         assertFalse(result.holds);
@@ -367,32 +431,31 @@ public class SoupGPSLModelCheckerTest {
 
     /// if one wants in it eventually gets in
     @Test
-    void testAliceBob2BuchiFairnessBuchi() throws Exception {
+    void testAliceBob2LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, fairnessBuchi).runAlone();
+        var result = mc(model, livenessBuchi).runAlone();
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
 
     /// LTL if one wants in it eventually gets in
     @Test
-    void testAliceBob2BuchiFairnessLTL() throws Exception {
+    void testAliceBob2LivenessLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, fairnessLTL).runAlone();
+        var result = mc(model, livenessLTL).runAlone();
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
 
-    /// if one does not want to go it wont go
     @Test
-    void testAliceBob2BuchiIdlingBuchi() throws Exception {
+    void testAliceBob2IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
         var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob2BuchiIdlingLTL() throws Exception {
+    void testAliceBob2IdlingLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
         var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
@@ -444,14 +507,14 @@ public class SoupGPSLModelCheckerTest {
 
     ///  At least one gets to the critical section ok in v3
     @Test
-    void testAliceBob3BuchiOneIn() throws Exception {
+    void testAliceBob3OneInBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
         var result = mc(model, atLeastOneInBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob3BuchiOneInLTL() throws Exception {
+    void testAliceBob3OneInLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
         var result = mc(model, atLeastOneInLTL).runAlone();
         assertTrue(result.holds);
@@ -459,31 +522,30 @@ public class SoupGPSLModelCheckerTest {
 
     /// if one wants in it eventually gets in fails in v3
     @Test
-    void testAliceBob3BuchiFairnessBuchi() throws Exception {
+    void testAliceBob3LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, fairnessBuchi).runAlone();
+        var result = mc(model, livenessBuchi).runAlone();
         assertFalse(result.holds);
         assertEquals(7, result.trace.size());
     }
 
     @Test
-    void testAliceBob3BuchiFairnessLTL() throws Exception {
+    void testAliceBob3LivenessLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, fairnessLTL).runAlone();
+        var result = mc(model, livenessLTL).runAlone();
         assertFalse(result.holds);
         assertEquals(7, result.trace.size());
     }
 
-    /// if one does not want to go it wont go
     @Test
-    void testAliceBob3BuchiIdlingBuchi() throws Exception {
+    void testAliceBob3IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
         var result = mc(model, idlingBuchi).runAlone();
         assertFalse(result.holds);
     }
 
     @Test
-    void testAliceBob3BuchiIdlingLTL() throws Exception {
+    void testAliceBob3IdlingLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
         var result = mc(model, idlingLTL).runAlone();
         assertFalse(result.holds);
@@ -535,14 +597,14 @@ public class SoupGPSLModelCheckerTest {
 
     ///  At least one gets to the critical section ok in v3
     @Test
-    void testAliceBob4BuchiOneIn() throws Exception {
+    void testAliceBob4OneInBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
         var result = mc(model, atLeastOneInBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4BuchiOneInLTL() throws Exception {
+    void testAliceBob4OneInLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
         var result = mc(model, atLeastOneInLTL).runAlone();
         assertTrue(result.holds);
@@ -550,33 +612,70 @@ public class SoupGPSLModelCheckerTest {
 
     /// if one wants in it eventually gets in fails in v3
     @Test
-    void testAliceBob4BuchiFairnessBuchi() throws Exception {
+    void testAliceBob4LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, fairnessBuchi).runAlone();
+        var result = mc(model, livenessBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4BuchiFairnessLTL() throws Exception {
+    void testAliceBob4LivenessLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, fairnessLTL).runAlone();
+        var result = mc(model, livenessLTL).runAlone();
         assertTrue(result.holds);
     }
 
-    /// if one does not want to go it wont go
-    /// TODO: Why does this property fail here ?
     @Test
-    void testAliceBob4BuchiIdlingBuchi() throws Exception {
+    void testAliceBob4IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
         var result = mc(model, idlingBuchi).runAlone();
-        assertFalse(result.holds);
+        assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob4BuchiIdlingLTL() throws Exception {
+    void testAliceBob4IdlingLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
         var result = mc(model, idlingLTL).runAlone();
-        assertFalse(result.holds);
+        assertTrue(result.holds);
+    }
+
+
+    @Test
+    void testAliceBob4IdlingWithFlagsLTL() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, idlingWithFlagsLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob4FlagDisciplineLTL() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        //Past operator is not supported in GPSL
+        var e = assertThrows(IllegalArgumentException.class, () -> {
+            mc(model, flagDisciplineLTL).runAlone();
+        });
+        assertEquals("""
+                Failed to parse property: error at 7:24-7:35: unexpected 'aliceFlagUP' [syntax-error]
+                  		!([]   (aliceCS -> P aliceFlagUP) //P is the past operator, currently unsupported
+                                         ^^^^^^^^^^^
+                error at 8:24-8:33: unexpected 'bobFlagUP' [syntax-error]
+                  		    && (bobCS   -> P bobFlagUP  ) )
+                                         ^^^^^^^^^
+                """, e.getMessage());
+    }
+
+    @Test
+    void testAliceBob4FlagDisciplineWithFlagsLTL() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, flagDisciplineWithFlagsLTL).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob4FlagDisciplineWithFlagsBuchi() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, flagDisciplineWithFlagsBuchi).runAlone();
+        assertTrue(result.holds);
     }
 
     /// ALICE BOB 5
@@ -640,32 +739,51 @@ public class SoupGPSLModelCheckerTest {
 
     /// if one wants in it eventually gets in fails in v3
     @Test
-    void testAliceBob5BuchiFairnessBuchi() throws Exception {
+    void testAliceBob5BuchiLivenessBuchi() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, fairnessBuchi).runAlone();
+        var result = mc(model, livenessBuchi).runAlone();
         assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5BuchiFairnessLTL() throws Exception {
+    void testAliceBob5BuchiLivenessLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, fairnessLTL).runAlone();
+        var result = mc(model, livenessLTL).runAlone();
         assertTrue(result.holds);
     }
 
-    /// if one does not want to go it wont go
-    /// TODO: Why does this property fail here ?
     @Test
     void testAliceBob5BuchiIdlingBuchi() throws Exception {
         var model = readSoup("alice-bob5.soup");
         var result = mc(model, idlingBuchi).runAlone();
-        assertFalse(result.holds);
+        assertTrue(result.holds);
     }
 
     @Test
-    void testAliceBob5BuchiIdlingLTL() throws Exception {
+    void testAliceBob5IdlingLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
         var result = mc(model, idlingLTL).runAlone();
-        assertFalse(result.holds);
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob5FlagDisciplineLTL() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var e = assertThrows(IllegalArgumentException.class, () -> mc(model, flagDisciplineLTL).runAlone());
+        assertEquals("""
+                Failed to parse property: error at 7:24-7:35: unexpected 'aliceFlagUP' [syntax-error]
+                  		!([]   (aliceCS -> P aliceFlagUP) //P is the past operator, currently unsupported
+                                         ^^^^^^^^^^^
+                error at 8:24-8:33: unexpected 'bobFlagUP' [syntax-error]
+                  		    && (bobCS   -> P bobFlagUP  ) )
+                                         ^^^^^^^^^
+                """, e.getMessage());
+    }
+
+    @Test
+    void testAliceBob5FlagDisciplineWithFlagsLTL() throws Exception {
+        var model = readSoup("alice-bob5.soup");
+        var e = assertThrows(AutomatonSemantics.GuardEvaluationException.class, () -> mc(model, flagDisciplineWithFlagsLTL).runAlone());
+        assertEquals("Failed to evaluate guard: Atom 'dB' evaluation failed.", e.getMessage());
     }
 }
