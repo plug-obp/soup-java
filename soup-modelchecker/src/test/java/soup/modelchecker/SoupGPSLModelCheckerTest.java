@@ -786,4 +786,132 @@ public class SoupGPSLModelCheckerTest {
         var e = assertThrows(AutomatonSemantics.GuardEvaluationException.class, () -> mc(model, flagDisciplineWithFlagsLTL).runAlone());
         assertEquals("Failed to evaluate guard: Atom 'dB' evaluation failed.", e.getMessage());
     }
+
+    /// No livelock 1: Stronger than no deadlock - ensures continuous progress conditionally
+    /// globally either no intention to go in the critical section or one of them gets to the critical section eventually
+    final String noLiveLock = """
+        noLiveLock =! []( !(|a==1| ∨ |b==1|) ∨
+        <>(|a==2| ∨ |b==2|) )
+        """;
+
+    @Test
+    void testAliceBob4NoLivelock() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, noLiveLock).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String initialSafety = """
+            initialSafety =! ((|a==0| ∧ |b==0| ∧ !|dA| ∧ !|dB|) ->
+                            []!(|a==2| ∧ |b==2|))
+            """;
+    @Test
+    void testAliceBob4InitialSafety() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, initialSafety).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String starvationFreedom = """
+            starvationFreedom =! []<>(|a==1| -> <>|a==2|) ∧ []<>(|b==1| -> <>|b==2|)
+            """;
+    @Test
+    void testAliceBob4StarvationFreedom() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, starvationFreedom).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String flagConsistency = """
+            flagConsistency =! []( (|a==1| ∨ |a==2|) ↔ |dA|) ∧ ( (|b==1| ∨ |b==2|) ↔ |dB|) )
+            """;
+    @Test
+    void testAliceBob4FlagConsistency() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, flagConsistency).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String criticalExit = """
+            criticalExit =! [](|a==2| -> <>|a==0|) ∧ [](|b==2| -> <>|b==0|)
+            """;
+    @Test
+    void testAliceBob4CriticalExit() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, criticalExit).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String noSpuriousWait = """
+            noSpuriousWait =! [](|a==1| -> F(|a==2| ∨ !|dA|)) ∧ [](|b==1| -> F(|b==2| ∨ !|dB|))
+            """;
+    @Test
+    void testAliceBob4NoSpuriousWait() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, noSpuriousWait).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String entryOrder = """
+            entryOrder =! (
+                    []( (|dA| ∧ !|dB|) -> (!|b==2| W |a==2|) )
+                 ∧  []( (|dB| ∧ !|dA|) -> (!|a==2| W |b==2|) ) )
+            """;
+    @Test
+    void testAliceBob4EntryOrder() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, entryOrder).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String noReentry = """
+        noReentry = let
+                aliceCS      = |a==2|,
+                bobCS        = |b==2|,
+                aliceWaiting = |a==1|,
+                bobWaiting   = |b==1|
+            in! (
+                  []((aliceCS ∧ bobWaiting ∧ X|a==0|)→ X(!aliceCS U bobCS))
+                ∧ []((bobCS ∧ aliceWaiting ∧ X|b==0|)→ X(!bobCS U aliceCS)))
+        """;
+    @Test
+    void testAliceBob4NoReentry() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, noReentry).runAlone();
+        assertTrue(result.holds);
+    }
+
+    final String nonInterference = """
+        nonInterference =! (
+                [](|a==2| ∧ |b==0| -> <>(|b==1| ∨ |b==0|))
+            ∧   [](|b==2| ∧ |a==0| -> <>(|a==1| ∨ |a==0|)) )
+        """;
+    @Test
+    void testAliceBob4NonInterference() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, nonInterference).runAlone();
+        assertTrue(result.holds);
+    }
+
+    /// Processes eventually express interest if they can
+    /// this requires a fairness assumption, otherwise either process could permanently decide not to raise its flag
+    final String eventualInterest = """
+        eventualInterest =! ([]<>(|a==0| -> <>|a==1|) ∧ []<>(|b==0| -> <>|b==1|))
+        """;
+    @Test
+    void testAliceBob4EventualInterest() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, eventualInterest).runAlone();
+        assertFalse(result.holds);
+    }
+
+    final String noMutualWaiting = """
+        noMutualWaiting = <>[] (|a==1| ∧ |b==1|)
+        """;
+    @Test
+    void testAliceBob4NoMutualWaiting() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, noMutualWaiting).runAlone();
+        assertTrue(result.holds);
+    }
 }
