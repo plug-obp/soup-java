@@ -823,7 +823,7 @@ public class SoupGPSLModelCheckerTest {
     }
 
     final String flagConsistency = """
-            flagConsistency =! []( (|a==1| ∨ |a==2|) ↔ |dA|) ∧ ( (|b==1| ∨ |b==2|) ↔ |dB|) )
+            flagConsistency =¬ []( (|a==1| ∨ |a==2|) ↔ |dA|) ∧ ( (|b==1| ∨ |b==2|) ↔ |dB|) )
             """;
     @Test
     void testAliceBob4FlagConsistency() throws Exception {

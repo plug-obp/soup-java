@@ -4,5 +4,7 @@ module language.soup.modelchecker {
     requires language.soup.core;
     requires language.gpsl.core;
     requires language.gpsl.modelchecker;
+    requires language.rege.core;
+    requires language.rege.modelchecker;
     exports soup.modelchecker;
 }
