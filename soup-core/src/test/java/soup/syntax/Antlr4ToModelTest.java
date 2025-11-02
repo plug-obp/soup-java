@@ -66,6 +66,8 @@ public class Antlr4ToModelTest {
     void testUnary() throws Exception {
         assertEquals(new NotExpression("!", BooleanLiteral.TRUE, Position.ZERO)
                 , Reader.readExpression("!true"));
+        assertEquals(new NotExpression("¬", BooleanLiteral.TRUE, Position.ZERO)
+                , Reader.readExpression("¬true"));
         assertEquals(
                 new MinusExpression(
                     new MinusExpression(

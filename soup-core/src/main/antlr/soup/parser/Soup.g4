@@ -59,7 +59,7 @@ SKIPS: 'skip';
 
 
 
-NOT: '!';
+NOT: '!' | '¬';
 OR : '||' | 'or' | '∨';
 AND: '&&' | 'and' | '∧';
 NOR: 'nor';
