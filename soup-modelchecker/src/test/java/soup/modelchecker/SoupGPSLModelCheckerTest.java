@@ -150,6 +150,27 @@ public class SoupGPSLModelCheckerTest {
                 		    && (bobCS   -> P bobFlagUP  ) )
                 """;
 
+    final String flagDisciplineNFA = """
+            flagDisciplineNFA = let
+                    aIdle   = |a == 0|,
+                    aNoFlag = |a != 1|,
+                    aCS     = |a == 2|,
+                    bIdle   = |a == 0|,
+                    bNoFlag = |a != 1|,
+                    bCS     = |a == 2|
+                in nfa
+                    states s0, sa1, sb1, saX, sbX;
+                    initial s0;
+                    accept saX, sbX;
+                    s0 [true] s0;
+                    s0 [aIdle] sa1;
+                    sa1 [aNoFlag] sa1;
+                    sa1 [aCS] saX;
+                    s0 [bIdle] sb1;
+                    sb1 [bNoFlag] sb1;
+                    sb1 [bCS] sbX
+            """;
+
     /// Flag discipline with flags
     /// No process can enter its critical section unless it has previously raised its flag.
     /// Whenever a process is in its critical section, its flag must have been raised (it must have wanted to enter)
@@ -662,6 +683,13 @@ public class SoupGPSLModelCheckerTest {
                   		    && (bobCS   -> P bobFlagUP  ) )
                                          ^^^^^^^^^
                 """, e.getMessage());
+    }
+
+    @Test
+    void testAliceBob4FlagDisciplineNFA() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, flagDisciplineNFA).runAlone();
+        assertTrue(result.holds);
     }
 
     @Test
