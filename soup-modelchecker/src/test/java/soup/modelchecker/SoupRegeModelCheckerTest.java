@@ -27,6 +27,16 @@ public class SoupRegeModelCheckerTest {
     final String exclusionRege = "τ[true]* ⋅ τ[a == 2 ∧ b == 2]";
     final String noDeadlockRege = "τ [true]* ⋅ τ [deadlock]";
     final String fullExploration = "τ [true]* ⋅ τ [false]";
+    final String initialOk = "τ[a!=0 ∨ b!=0]";
+    final String initialSafety = "τ[a==0 ∧ b==0 ∧ ¬dA ∧ ¬dB] ⋅ (τ[true])* ⋅ τ[a==2 ∧ b==2]";
+
+    /// A process cannot enter CS without first raising its flag since the last idle.”
+    ///The following cannot be expressed in the future-only LTL
+    ///The trace contains at least one segment where the process goes idle, never raises its flag, and then enters its critical section.
+    final String flagConsistency = """
+             (τ[true]* ⋅ τ[a==0] ⋅ τ[a≠1]* ⋅ τ[a==2] ⋅ τ[true]*)
+           | (τ[true]* ⋅ τ[b==0] ⋅ τ[b≠1]* ⋅ τ[b==2] ⋅ τ[true]*)
+            """;
 
     @Test
     void testAliceBob0ExclusionPred() throws Exception {
@@ -76,6 +86,34 @@ public class SoupRegeModelCheckerTest {
     void testAliceBob2Full() throws Exception {
         var model = readSoup("alice-bob2.soup");
         var result = mc(model, fullExploration).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob4InitialOk() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, initialOk).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob4InitialNok() throws Exception {
+        var model1 = Reader.readSoup("var a = 1; b = 0;");
+        var result1 = mc(model1, initialOk).runAlone();
+        assertFalse(result1.holds);
+    }
+
+    @Test
+    void testAliceBob4InitialSafety() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, initialSafety).runAlone();
+        assertTrue(result.holds);
+    }
+
+    @Test
+    void testAliceBob4FlagConsistency() throws Exception {
+        var model = readSoup("alice-bob4.soup");
+        var result = mc(model, flagConsistency).runAlone();
         assertTrue(result.holds);
     }
 }
