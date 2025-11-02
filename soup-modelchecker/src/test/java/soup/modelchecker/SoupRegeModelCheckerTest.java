@@ -33,7 +33,7 @@ public class SoupRegeModelCheckerTest {
     /// A process cannot enter CS without first raising its flag since the last idle.”
     ///The following cannot be expressed in the future-only LTL
     ///The trace contains at least one segment where the process goes idle, never raises its flag, and then enters its critical section.
-    final String flagConsistency = """
+    final String flagDiscipline = """
              (τ[true]* ⋅ τ[a==0] ⋅ τ[a≠1]* ⋅ τ[a==2] ⋅ τ[true]*)
            | (τ[true]* ⋅ τ[b==0] ⋅ τ[b≠1]* ⋅ τ[b==2] ⋅ τ[true]*)
             """;
@@ -113,7 +113,7 @@ public class SoupRegeModelCheckerTest {
     @Test
     void testAliceBob4FlagConsistency() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, flagConsistency).runAlone();
+        var result = mc(model, flagDiscipline).runAlone();
         assertTrue(result.holds);
     }
 }
