@@ -56,3 +56,11 @@ publishing {
     }
 }
 
+task packageZip(type: Zip) {
+    from configurations.runtimeClasspath
+    from("$buildDir/libs") {
+        include '*.jar'
+    }
+    archiveFileName = 'app-with-deps.zip'
+    destinationDirectory = file("$buildDir/distributions")
+}
