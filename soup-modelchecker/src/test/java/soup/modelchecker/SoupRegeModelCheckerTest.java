@@ -25,7 +25,7 @@ public class SoupRegeModelCheckerTest {
     }
 
     final String exclusionRege = "τ[true]* ⋅ τ[a == 2 ∧ b == 2]";
-    final String noDeadlockRege = "τ [true]* ⋅ τ [deadlock]";
+    final String noDeadlockRege = "τ[true]* ⋅ τ [deadlock]";
     final String fullExploration = "τ [true]* ⋅ τ [false]";
     final String initialOk = "τ[a!=0 ∨ b!=0]";
     final String initialSafety = "τ[a==0 ∧ b==0 ∧ ¬dA ∧ ¬dB] ⋅ (τ[true])* ⋅ τ[a==2 ∧ b==2]";

@@ -35,7 +35,7 @@ public class SoupGPSLModelCheckerTest {
                 s [|a==2 && b==2|] x
                 """;
     final String exclusionLTL = """
-            p = ! [] ! |a==2 && b==2|
+            p =! [] ! |a==2 && b==2|
             """;
     final String exclusionBuchi = """
             p = let p = |a==2| && |b==2| in
@@ -53,7 +53,7 @@ public class SoupGPSLModelCheckerTest {
 
 
     /// recurrence: Alice or Bob will enter the critical section infinitely often
-    final String atLeastOneInLTL = "p = ![]<> (|a==2| or |b==2|)";
+    final String atLeastOneInLTL = "p =! []<> (|a==2| or |b==2|)";
     final String atLeastOneInBuchi = """
                 p =
                 states s, x;
@@ -66,8 +66,8 @@ public class SoupGPSLModelCheckerTest {
 
     /// If a process wants to enter (flag up), it will eventually get to the CS.
     final String livenessLTL = """
-                p =![](  (|a==1| -> <> |a==2|)
-                       ∧ (|b==1| -> <> |b==2|))
+                p =! [](  (|a==1| -> <> |a==2|)
+                        ∧ (|b==1| -> <> |b==2|))
                 """;
 
     final String livenessBuchi = """
