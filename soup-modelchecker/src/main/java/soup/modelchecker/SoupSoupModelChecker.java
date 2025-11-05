@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.ParseException;
+import java.util.function.BiPredicate;
 
 public class SoupSoupModelChecker {
     Soup modelSoup;
@@ -53,6 +54,10 @@ public class SoupSoupModelChecker {
         return new SoupSemantics(modelSoup).pureSemantics();
     }
 
+    DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> propertySemanticsProvider(BiPredicate<String, Step<AnonymousPiece, Environment>> atomEval) {
+        return new SoupStepDependentSemantics(propertySoup).pureSemantics();
+    }
+
     public DependentSemanticRelation<Step<AnonymousPiece, Environment>, AnonymousPiece, Environment> getPropertySemantics() {
         return propertySoup == null ? null : new SoupStepDependentSemantics(propertySoup).pureSemantics();
     }
@@ -66,7 +71,7 @@ public class SoupSoupModelChecker {
         var builder =
                 new ModelCheckerBuilder<AnonymousPiece, Environment, AnonymousPiece, Environment>()
                     .modelSemantics(getModelSemantics())
-                    .propertySemantics(getPropertySemantics())
+                    .propertySemantics(propertySoup == null ? null : this::propertySemanticsProvider)
                     .buchi(isBuchi)
                     //.emptinessCheckerAlgorithm(emptinessCheckerAlgorithm)
                     .traversalStrategy(traversalAlgorithm)
@@ -74,7 +79,7 @@ public class SoupSoupModelChecker {
         if (getPropertySemantics() == null) {
             builder.acceptingPredicateForModel(this::acceptingPredicate);
         } else {
-            builder.acceptingPredicateForProduct((c) -> acceptingPredicate(c.r()));
+            builder.acceptingPredicateForProduct((c, sem) -> acceptingPredicate(c.r()));
         }
         return builder.modelChecker();
     }
