@@ -1,9 +1,13 @@
 package soup.modelchecker;
 
 import gpsl.semantics.AutomatonSemantics;
+import gpsl.syntax.model.State;
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.runtime.IExecutable;
+import obp3.runtime.sli.Step;
+import obp3.sli.core.operators.product.Product;
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.Environment;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.Soup;
 
@@ -21,8 +25,9 @@ public class SoupGPSLModelCheckerTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    IExecutable<EmptinessCheckerAnswer<?>> mc(Soup model, String property) {
-        return SoupGPSLModelChecker.soupGPSLModelChecker(model, property);
+    @SuppressWarnings("unchecked")
+    EmptinessCheckerAnswer<Product<?,?>> mc(Soup model, String property) {
+        return (EmptinessCheckerAnswer<Product<?,?>>)SoupGPSLModelChecker.soupGPSLModelChecker(model, property).runAlone();
     }
 
     final String exclusionPred = "p=!|a==2 && b==2|";
@@ -206,15 +211,19 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0ExclusionPred() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, exclusionPred).runAlone();
+        var result = mc(model, exclusionPred);
         assertFalse(result.holds);
+        var soupWitness = ((Environment)result.witness.start().l());
+        assertEquals( soupWitness.lookup("a"), soupWitness.lookup("b"));
+        var propWitness = ((State)result.witness.end().r());
+        assertEquals("x", propWitness.name());
         assertEquals(6, result.trace.size());
     }
 
     @Test
     void testAliceBob0ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, exclusionNFA).runAlone();
+        var result = mc(model, exclusionNFA);
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
@@ -222,7 +231,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, exclusionLTL).runAlone();
+        var result = mc(model, exclusionLTL);
         assertFalse(result.holds);
         assertEquals(9, result.trace.size());
     }
@@ -230,7 +239,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, exclusionBuchi).runAlone();
+        var result = mc(model, exclusionBuchi);
         assertFalse(result.holds);
         assertEquals(9, result.trace.size());
     }
@@ -239,14 +248,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0DeadlockPred() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, noDeadlockPred).runAlone();
+        var result = mc(model, noDeadlockPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob0DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, noDeadlockLTL).runAlone();
+        var result = mc(model, noDeadlockLTL);
         assertTrue(result.holds);
     }
 
@@ -254,7 +263,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0OneInBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, atLeastOneInBuchi).runAlone();
+        var result = mc(model, atLeastOneInBuchi);
         assertTrue(result.holds);
     }
 
@@ -262,7 +271,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0OneInLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, atLeastOneInLTL).runAlone();
+        var result = mc(model, atLeastOneInLTL);
         assertTrue(result.holds);
     }
 
@@ -270,7 +279,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, livenessBuchi).runAlone();
+        var result = mc(model, livenessBuchi);
         assertFalse(result.holds);
     }
 
@@ -278,21 +287,21 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob0LivenessLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, livenessLTL).runAlone();
+        var result = mc(model, livenessLTL);
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob0IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, idlingBuchi).runAlone();
+        var result = mc(model, idlingBuchi);
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob0IdlingLTL() throws Exception {
         var model = readSoup("alice-bob0.soup");
-        var result = mc(model, idlingLTL).runAlone();
+        var result = mc(model, idlingLTL);
         assertFalse(result.holds);
     }
 
@@ -300,28 +309,28 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1ExclusionPred() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, exclusionPred).runAlone();
+        var result = mc(model, exclusionPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob1ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, exclusionNFA).runAlone();
+        var result = mc(model, exclusionNFA);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob1ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, exclusionLTL).runAlone();
+        var result = mc(model, exclusionLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob1ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, exclusionBuchi).runAlone();
+        var result = mc(model, exclusionBuchi);
         assertTrue(result.holds);
     }
 
@@ -329,7 +338,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1DeadlockPred() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, noDeadlockPred).runAlone();
+        var result = mc(model, noDeadlockPred);
         assertFalse(result.holds);
         assertEquals(4, result.trace.size());
     }
@@ -337,7 +346,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, noDeadlockLTL).runAlone();
+        var result = mc(model, noDeadlockLTL);
         assertFalse(result.holds);
         assertEquals(5, result.trace.size());
     }
@@ -346,7 +355,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1OneInBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, atLeastOneInBuchi).runAlone();
+        var result = mc(model, atLeastOneInBuchi);
         assertFalse(result.holds);
     }
 
@@ -354,7 +363,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1OneInLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, atLeastOneInLTL).runAlone();
+        var result = mc(model, atLeastOneInLTL);
         assertFalse(result.holds);
     }
 
@@ -362,7 +371,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, livenessBuchi).runAlone();
+        var result = mc(model, livenessBuchi);
         assertFalse(result.holds);
     }
 
@@ -370,21 +379,21 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob1LivenessLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, livenessLTL).runAlone();
+        var result = mc(model, livenessLTL);
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob1IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, idlingBuchi).runAlone();
+        var result = mc(model, idlingBuchi);
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob1IdlingLTL() throws Exception {
         var model = readSoup("alice-bob1.soup");
-        var result = mc(model, idlingLTL).runAlone();
+        var result = mc(model, idlingLTL);
         assertFalse(result.holds);
     }
 
@@ -392,28 +401,28 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2ExclusionPred() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, exclusionPred).runAlone();
+        var result = mc(model, exclusionPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob2ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, exclusionNFA).runAlone();
+        var result = mc(model, exclusionNFA);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob2ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, exclusionLTL).runAlone();
+        var result = mc(model, exclusionLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob2ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, exclusionBuchi).runAlone();
+        var result = mc(model, exclusionBuchi);
         assertTrue(result.holds);
     }
 
@@ -421,14 +430,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2DeadlockPred() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, noDeadlockPred).runAlone();
+        var result = mc(model, noDeadlockPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob2DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, noDeadlockLTL).runAlone();
+        var result = mc(model, noDeadlockLTL);
         assertTrue(result.holds);
     }
 
@@ -436,7 +445,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2OneInBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, atLeastOneInBuchi).runAlone();
+        var result = mc(model, atLeastOneInBuchi);
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
@@ -445,7 +454,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2OneInLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, atLeastOneInLTL).runAlone();
+        var result = mc(model, atLeastOneInLTL);
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
@@ -454,7 +463,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, livenessBuchi).runAlone();
+        var result = mc(model, livenessBuchi);
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
@@ -463,7 +472,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2LivenessLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, livenessLTL).runAlone();
+        var result = mc(model, livenessLTL);
         assertFalse(result.holds);
         assertEquals(6, result.trace.size());
     }
@@ -471,14 +480,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob2IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, idlingBuchi).runAlone();
+        var result = mc(model, idlingBuchi);
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob2IdlingLTL() throws Exception {
         var model = readSoup("alice-bob2.soup");
-        var result = mc(model, idlingLTL).runAlone();
+        var result = mc(model, idlingLTL);
         assertFalse(result.holds);
     }
 
@@ -486,28 +495,28 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob3ExclusionPred() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, exclusionPred).runAlone();
+        var result = mc(model, exclusionPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob3ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, exclusionNFA).runAlone();
+        var result = mc(model, exclusionNFA);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob3ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, exclusionLTL).runAlone();
+        var result = mc(model, exclusionLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob3ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, exclusionBuchi).runAlone();
+        var result = mc(model, exclusionBuchi);
         assertTrue(result.holds);
     }
 
@@ -515,14 +524,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob3DeadlockPred() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, noDeadlockPred).runAlone();
+        var result = mc(model, noDeadlockPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob3DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, noDeadlockLTL).runAlone();
+        var result = mc(model, noDeadlockLTL);
         assertTrue(result.holds);
     }
 
@@ -530,14 +539,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob3OneInBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, atLeastOneInBuchi).runAlone();
+        var result = mc(model, atLeastOneInBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob3OneInLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, atLeastOneInLTL).runAlone();
+        var result = mc(model, atLeastOneInLTL);
         assertTrue(result.holds);
     }
 
@@ -545,7 +554,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob3LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, livenessBuchi).runAlone();
+        var result = mc(model, livenessBuchi);
         assertFalse(result.holds);
         assertEquals(7, result.trace.size());
     }
@@ -553,7 +562,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob3LivenessLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, livenessLTL).runAlone();
+        var result = mc(model, livenessLTL);
         assertFalse(result.holds);
         assertEquals(7, result.trace.size());
     }
@@ -561,14 +570,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob3IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, idlingBuchi).runAlone();
+        var result = mc(model, idlingBuchi);
         assertFalse(result.holds);
     }
 
     @Test
     void testAliceBob3IdlingLTL() throws Exception {
         var model = readSoup("alice-bob3.soup");
-        var result = mc(model, idlingLTL).runAlone();
+        var result = mc(model, idlingLTL);
         assertFalse(result.holds);
     }
 
@@ -576,28 +585,28 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4ExclusionPred() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, exclusionPred).runAlone();
+        var result = mc(model, exclusionPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, exclusionNFA).runAlone();
+        var result = mc(model, exclusionNFA);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, exclusionLTL).runAlone();
+        var result = mc(model, exclusionLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, exclusionBuchi).runAlone();
+        var result = mc(model, exclusionBuchi);
         assertTrue(result.holds);
     }
 
@@ -605,14 +614,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4DeadlockPred() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, noDeadlockPred).runAlone();
+        var result = mc(model, noDeadlockPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, noDeadlockLTL).runAlone();
+        var result = mc(model, noDeadlockLTL);
         assertTrue(result.holds);
     }
 
@@ -620,14 +629,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4OneInBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, atLeastOneInBuchi).runAlone();
+        var result = mc(model, atLeastOneInBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4OneInLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, atLeastOneInLTL).runAlone();
+        var result = mc(model, atLeastOneInLTL);
         assertTrue(result.holds);
     }
 
@@ -635,28 +644,28 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4LivenessBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, livenessBuchi).runAlone();
+        var result = mc(model, livenessBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4LivenessLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, livenessLTL).runAlone();
+        var result = mc(model, livenessLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4IdlingBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, idlingBuchi).runAlone();
+        var result = mc(model, idlingBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4IdlingLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, idlingLTL).runAlone();
+        var result = mc(model, idlingLTL);
         assertTrue(result.holds);
     }
 
@@ -664,7 +673,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4IdlingWithFlagsLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, idlingWithFlagsLTL).runAlone();
+        var result = mc(model, idlingWithFlagsLTL);
         assertTrue(result.holds);
     }
 
@@ -673,7 +682,7 @@ public class SoupGPSLModelCheckerTest {
         var model = readSoup("alice-bob4.soup");
         //Past operator is not supported in GPSL
         var e = assertThrows(IllegalArgumentException.class, () -> {
-            mc(model, flagDisciplineLTL).runAlone();
+            mc(model, flagDisciplineLTL);
         });
         assertEquals("""
                 Failed to parse property: error at 7:24-7:35: unexpected 'aliceFlagUP' [syntax-error]
@@ -688,21 +697,21 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4FlagDisciplineNFA() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, flagDisciplineNFA).runAlone();
+        var result = mc(model, flagDisciplineNFA);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4FlagDisciplineWithFlagsLTL() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, flagDisciplineWithFlagsLTL).runAlone();
+        var result = mc(model, flagDisciplineWithFlagsLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob4FlagDisciplineWithFlagsBuchi() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, flagDisciplineWithFlagsBuchi).runAlone();
+        var result = mc(model, flagDisciplineWithFlagsBuchi);
         assertTrue(result.holds);
     }
 
@@ -710,28 +719,28 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob5ExclusionPred() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, exclusionPred).runAlone();
+        var result = mc(model, exclusionPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5ExclusionNFA() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, exclusionNFA).runAlone();
+        var result = mc(model, exclusionNFA);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5ExclusionLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, exclusionLTL).runAlone();
+        var result = mc(model, exclusionLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5ExclusionBuchi() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, exclusionBuchi).runAlone();
+        var result = mc(model, exclusionBuchi);
         assertTrue(result.holds);
     }
 
@@ -739,14 +748,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob5DeadlockPred() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, noDeadlockPred).runAlone();
+        var result = mc(model, noDeadlockPred);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5DeadlockLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, noDeadlockLTL).runAlone();
+        var result = mc(model, noDeadlockLTL);
         assertTrue(result.holds);
     }
 
@@ -754,14 +763,14 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob5BuchiOneIn() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, atLeastOneInBuchi).runAlone();
+        var result = mc(model, atLeastOneInBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5BuchiOneInLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, atLeastOneInLTL).runAlone();
+        var result = mc(model, atLeastOneInLTL);
         assertTrue(result.holds);
     }
 
@@ -769,35 +778,35 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob5BuchiLivenessBuchi() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, livenessBuchi).runAlone();
+        var result = mc(model, livenessBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5BuchiLivenessLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, livenessLTL).runAlone();
+        var result = mc(model, livenessLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5BuchiIdlingBuchi() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, idlingBuchi).runAlone();
+        var result = mc(model, idlingBuchi);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5IdlingLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var result = mc(model, idlingLTL).runAlone();
+        var result = mc(model, idlingLTL);
         assertTrue(result.holds);
     }
 
     @Test
     void testAliceBob5FlagDisciplineLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var e = assertThrows(IllegalArgumentException.class, () -> mc(model, flagDisciplineLTL).runAlone());
+        var e = assertThrows(IllegalArgumentException.class, () -> mc(model, flagDisciplineLTL));
         assertEquals("""
                 Failed to parse property: error at 7:24-7:35: unexpected 'aliceFlagUP' [syntax-error]
                   		!([]   (aliceCS -> P aliceFlagUP) //P is the past operator, currently unsupported
@@ -811,7 +820,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob5FlagDisciplineWithFlagsLTL() throws Exception {
         var model = readSoup("alice-bob5.soup");
-        var e = assertThrows(AutomatonSemantics.GuardEvaluationException.class, () -> mc(model, flagDisciplineWithFlagsLTL).runAlone());
+        var e = assertThrows(AutomatonSemantics.GuardEvaluationException.class, () -> mc(model, flagDisciplineWithFlagsLTL));
         assertEquals("Failed to evaluate guard: Atom 'dB' evaluation failed.", e.getMessage());
     }
 
@@ -825,7 +834,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4NoLivelock() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, noLiveLock).runAlone();
+        var result = mc(model, noLiveLock);
         assertTrue(result.holds);
     }
 
@@ -836,7 +845,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4InitialSafety() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, initialSafety).runAlone();
+        var result = mc(model, initialSafety);
         assertTrue(result.holds);
     }
 
@@ -846,7 +855,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4StarvationFreedom() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, starvationFreedom).runAlone();
+        var result = mc(model, starvationFreedom);
         assertTrue(result.holds);
     }
 
@@ -856,7 +865,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4FlagConsistency() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, flagConsistency).runAlone();
+        var result = mc(model, flagConsistency);
         assertTrue(result.holds);
     }
 
@@ -866,7 +875,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4CriticalExit() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, criticalExit).runAlone();
+        var result = mc(model, criticalExit);
         assertTrue(result.holds);
     }
 
@@ -876,7 +885,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4NoSpuriousWait() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, noSpuriousWait).runAlone();
+        var result = mc(model, noSpuriousWait);
         assertTrue(result.holds);
     }
 
@@ -888,7 +897,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4EntryOrder() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, entryOrder).runAlone();
+        var result = mc(model, entryOrder);
         assertTrue(result.holds);
     }
 
@@ -905,7 +914,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4NoReentry() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, noReentry).runAlone();
+        var result = mc(model, noReentry);
         assertTrue(result.holds);
     }
 
@@ -917,7 +926,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4NonInterference() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, nonInterference).runAlone();
+        var result = mc(model, nonInterference);
         assertTrue(result.holds);
     }
 
@@ -929,7 +938,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4EventualInterest() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, eventualInterest).runAlone();
+        var result = mc(model, eventualInterest);
         assertFalse(result.holds);
     }
 
@@ -939,7 +948,7 @@ public class SoupGPSLModelCheckerTest {
     @Test
     void testAliceBob4NoMutualWaiting() throws Exception {
         var model = readSoup("alice-bob4.soup");
-        var result = mc(model, noMutualWaiting).runAlone();
+        var result = mc(model, noMutualWaiting);
         assertTrue(result.holds);
     }
 }
