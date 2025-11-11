@@ -186,13 +186,22 @@ public class MantrapSoupGPSLTest {
     final String resetDoesNotShortcircuit = """
             resetDoesNotShortcircuit =! [] ((|sequence_phase==1| ∧ X|sequence_phase==0|) → |d2==1|)
             """;
+    final String door2ImpAuth = """
+            door2ImpAuth =! [] (|d2==1| -> |authorized|)
+            """;
     final String door2AfterDoor1D = """
             door2AfterDoor1D = let
-                    p = (|d1==1| → ◇ |d2==1|),
-                    q = |authorized|,
-                    r = ¬ |authorized|,
-                in
-                    [] (q → (p W r))
+                    d1 = |d1==1|,
+                    d2 = |d2==1|,
+                    a = |authorized|
+                in!
+                G((a∧(a U d1))→(¬d2 U (d1∧F(a∧d2))))
+                //[]((auth ∧ (auth U d1)) → (auth U (d1 ∧ (auth U d2))))
+            
+//                      []([]q -> p)
+//                [] ((|authorized == 0 && authorized' == 1| ∧ |d1==1|) → (|authorized| W |d2==1|))
+//                    [] (q → (p W r))
+//[] ( (|authorized| ∧ |d1==1|) → (|authorized| W |d2==1|) )
             """;
 
     final String door1AfterDoor2D = """
@@ -200,7 +209,7 @@ public class MantrapSoupGPSLTest {
                     p = (|d2==1| → ◇ |d1==1|),
                     q = |authorized|,
                     r = ¬ |authorized|,
-                in
+                in!
                     [] (q → (p W r))
             """;
 
@@ -269,12 +278,13 @@ public class MantrapSoupGPSLTest {
                     Map.entry(authWithoutDoor1OpenLeadsToNotAuthorizedOrDoor1Open, Result.ok(true)),
                     Map.entry(authWithoutDoor2OpenLeadsToNotAuthorizedOrDoor2Open, Result.ok(true)),
                     Map.entry(phase1LeadsToDoor1Open, Result.ok(false)),
-                    Map.entry(phase0LeadsToDoor2Open, Result.ok(false)),
+                    Map.entry(phase0LeadsToDoor2Open, Result.ok(false))
 //                    Map.entry(door1InfinitelyOften, Result.ok(false)),
 //                    Map.entry(everyPhase0LeadsToD1Opening, Result.ok(false)),
 //                    Map.entry(resetDoesNotShortcircuit, Result.ok(false)),
-                    Map.entry(door2AfterDoor1D, Result.ok(false)),
-                    Map.entry(door1AfterDoor2D, Result.ok(false))
+//                    Map.entry(door2ImpAuth, Result.ok(true)),
+//                    Map.entry(door2AfterDoor1D, Result.ok(false))
+//                    Map.entry(door1AfterDoor2D, Result.ok(true))
 
             )
     );
