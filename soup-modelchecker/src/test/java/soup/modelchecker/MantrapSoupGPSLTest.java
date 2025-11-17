@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MantrapSoupGPSLTest {
     // Mutual exclusion - both doors never open simultaneously
-    final String exclusionPred = "p=!|d1==1 && d2==1|";
+    final String exclusionPred = "p =! !|d1==1 && d2==1|";
     final String exclusion = """
             exclusion = let
                 door1_open = |d1==1|,

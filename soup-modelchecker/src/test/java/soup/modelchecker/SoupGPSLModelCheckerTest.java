@@ -30,7 +30,7 @@ public class SoupGPSLModelCheckerTest {
         return (EmptinessCheckerAnswer<Product<?,?>>)SoupGPSLModelChecker.soupGPSLModelChecker(model, property).runAlone();
     }
 
-    final String exclusionPred = "p=!|a==2 && b==2|";
+    final String exclusionPred = "p=! !|a==2 && b==2|";
     final String exclusionNFA = """
                 p = nfa
                 states s, x;
@@ -53,7 +53,7 @@ public class SoupGPSLModelCheckerTest {
                 x [true] x
             """;
 
-    final String noDeadlockPred = "p=!|deadlock|";
+    final String noDeadlockPred = "p=! !|deadlock|";
     final String noDeadlockLTL = "p=! G !|deadlock|";
 
 
