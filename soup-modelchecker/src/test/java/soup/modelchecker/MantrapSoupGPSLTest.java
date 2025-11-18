@@ -36,6 +36,14 @@ public class MantrapSoupGPSLTest {
                 authorized = |authorized|
             in! [] ( (door2_open ∧ ¬authorized) → ◯(|d2==0|) ) //[] (door2_open → authorized)
             """;
+
+    final String securityDoor1 = """
+            security = let
+                door1_open = |d1==1|,
+                authorized = |authorized|
+            in! [] ( (door1_open ∧ ¬authorized) → ◯(|d1==0|) ) //[] (door2_open → authorized)
+            """;
+
     final String door1IsOpenOnlyIfAutorized = """
             door1IsOpenOnlyIfAutorized = let
                 door1_open = |d1==1|,
@@ -79,6 +87,14 @@ public class MantrapSoupGPSLTest {
                 door1_open = |d1==1|
             in! [] (authorized → ◇ door1_open)
             """;
+
+    final String authLeadsToDoor2Open = """
+            authLeadsToDoor1Open = let
+                authorized = |authorized|,
+                door1_open = |d1==1|
+            in! [] (authorized → ◇ door1_open)
+            """;
+
     final String authLeadsToDoor1OpenM2 = """
             authLeadsToDoor1OpenM2 = let
                 authorized = |authorized|,
@@ -130,11 +146,11 @@ public class MantrapSoupGPSLTest {
                         door2_open = |d2==1|
             in! [] ( authorized →
                     ( (authorized U door1_open) ∨ ◇¬authorized ) →
-                    ◇ ( door1_open ∧
-                        ( (authorized U ¬door1_open) ∨ ◇¬authorized ) →
-                        ◇ ( ¬door1_open ∧
-                            ( (authorized U door2_open) ∨ ◇¬authorized )
-                        )
+                        ◇ ( door1_open ∧
+                            ( (authorized U ¬door1_open) ∨ ◇¬authorized ) →
+                            ◇ ( ¬door1_open ∧
+                                ( (authorized U door2_open) ∨ ◇¬authorized )
+                            )
                     )
                 )
             """;
@@ -248,10 +264,13 @@ public class MantrapSoupGPSLTest {
                     Map.entry(exclusion, Result.ok(true)),
                     Map.entry(noDeadlock, Result.ok(true)),
                     Map.entry(security, Result.ok(true)),
+                    Map.entry(securityDoor1, Result.ok(true)),
                     Map.entry(door1IsOpenOnlyIfAutorized, Result.ok(true)),
                     Map.entry(door1EventuallyOpensIfAuthorized, Result.ok(true)),
                     Map.entry(door2EventuallyOpensIfAuthorized, Result.ok(true)),
                     Map.entry(alwaysPossibleToProgressSomehow, Result.ok(true)),
+//                    Map.entry(authLeadsToDoor1Open, Result.ok(false)),
+//                    Map.entry(authLeadsToDoor2Open, Result.ok(false)),
                     Map.entry(eventualSecurity, Result.ok(true)),
                     Map.entry(door1OpenLeadsToDoor1Close, Result.ok(true)),
                     Map.entry(door2OpenImpliesDoor1WasOpenBefore, Result.err(new IllegalArgumentException())),
