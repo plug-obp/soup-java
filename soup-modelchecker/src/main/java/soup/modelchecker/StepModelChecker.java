@@ -79,7 +79,7 @@ public class StepModelChecker<MA, MC> {
         return null;//new SoupStepDependentSemantics(propertyModel, atomEval).pureSemantics();
     }
 
-    public IExecutable<EmptinessCheckerAnswer<?>> modelChecker() {
+    public IExecutable<?, EmptinessCheckerAnswer<?>> modelChecker() {
         return null;
     }
 }

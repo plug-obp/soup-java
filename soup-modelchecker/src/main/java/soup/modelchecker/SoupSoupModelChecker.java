@@ -67,7 +67,7 @@ public class SoupSoupModelChecker {
         return (boolean) evaluator.evaluate(acceptingPredicateExpression, c);
     }
 
-    IExecutable<EmptinessCheckerAnswer<?>> modelChecker() {
+    IExecutable<?, EmptinessCheckerAnswer<?>> modelChecker() {
         var builder =
                 new ModelCheckerBuilder<AnonymousPiece, Environment, AnonymousPiece, Environment>()
                     .modelSemantics(getModelSemantics())

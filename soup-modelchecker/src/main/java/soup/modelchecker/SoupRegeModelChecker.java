@@ -12,7 +12,7 @@ import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.declarations.pieces.AnonymousPiece;
 
 public class SoupRegeModelChecker {
-    public static IExecutable<EmptinessCheckerAnswer<?>> soupRegeModelChecker(
+    public static IExecutable<?, EmptinessCheckerAnswer<?>> soupRegeModelChecker(
             Soup modelSoup,
             String property) {
         var checker = new StepModelChecker<>(

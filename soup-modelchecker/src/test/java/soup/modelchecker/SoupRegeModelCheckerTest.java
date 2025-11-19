@@ -20,7 +20,7 @@ public class SoupRegeModelCheckerTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    IExecutable<EmptinessCheckerAnswer<?>> mc(Soup model, String property) {
+    IExecutable<?, EmptinessCheckerAnswer<?>> mc(Soup model, String property) {
         return SoupRegeModelChecker.soupRegeModelChecker(model, property);
     }
 

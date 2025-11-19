@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SoupModelCheckerTest {
     String modelPath = "../soup-models/alice-bob/";
-    IExecutable<EmptinessCheckerAnswer<?>> predicateMC(Soup model, Expression predicate) {
+    IExecutable<?, EmptinessCheckerAnswer<?>> predicateMC(Soup model, Expression predicate) {
         var soupModelChecker = new SoupSoupModelChecker(
                 model,
                 null,
@@ -32,7 +32,7 @@ public class SoupModelCheckerTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    IExecutable<EmptinessCheckerAnswer<?>> mc(Soup model, Soup property, Expression predicate, boolean isBuchi) {
+    IExecutable<?, EmptinessCheckerAnswer<?>> mc(Soup model, Soup property, Expression predicate, boolean isBuchi) {
         var soupModelChecker = new SoupSoupModelChecker(
                 model,
                 property,
@@ -42,11 +42,11 @@ public class SoupModelCheckerTest {
                 -1);
         return soupModelChecker.modelChecker();
     }
-    IExecutable<EmptinessCheckerAnswer<?>> safetyMc(Soup model, Soup property, Expression predicate) {
+    IExecutable<?, EmptinessCheckerAnswer<?>> safetyMc(Soup model, Soup property, Expression predicate) {
         return mc(model, property, predicate, false);
     }
 
-    IExecutable<EmptinessCheckerAnswer<?>> buchiMc(Soup model, Soup property, Expression predicate) {
+    IExecutable<?, EmptinessCheckerAnswer<?>> buchiMc(Soup model, Soup property, Expression predicate) {
         return mc(model, property, predicate, true);
     }
 

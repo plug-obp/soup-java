@@ -13,7 +13,7 @@ import soup.syntax.model.declarations.pieces.AnonymousPiece;
 
 public class SoupGPSLModelChecker {
 
-    public static IExecutable<EmptinessCheckerAnswer<?>> soupGPSLModelChecker(
+    public static IExecutable<?, EmptinessCheckerAnswer<?>> soupGPSLModelChecker(
             Soup modelSoup,
             String property) {
         var checker = new StepModelChecker<>(
