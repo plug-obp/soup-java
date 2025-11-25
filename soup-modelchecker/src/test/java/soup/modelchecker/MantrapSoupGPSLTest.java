@@ -313,12 +313,11 @@ public class MantrapSoupGPSLTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    @SuppressWarnings("unchecked")
-    EmptinessCheckerAnswer<Product<?, ?>> mc(Soup model, String property) {
-        return (EmptinessCheckerAnswer<Product<?, ?>>) SoupGPSLModelChecker.soupGPSLModelChecker(model, property).runAlone();
+    EmptinessCheckerAnswer<Product<Environment, State>> mc(Soup model, String property) {
+        return SoupGPSLModelChecker.soupGPSLModelChecker(model, property).runAlone();
     }
 
-    EmptinessCheckerAnswer<Product<?, ?>> mc(String modelName, String property) throws IOException, ParseException {
+    EmptinessCheckerAnswer<Product<Environment, State>> mc(String modelName, String property) throws IOException, ParseException {
         var model = readSoup(modelName);
         return mc(model, property);
     }
@@ -328,7 +327,7 @@ public class MantrapSoupGPSLTest {
         for (var entry : models2properties.entrySet()) {
             for (var property : entry.getValue().entrySet()) {
                 var propName = "'" + property.getKey().split("=")[0].trim() + "'";
-                EmptinessCheckerAnswer<Product<?, ?>> result = null;
+                EmptinessCheckerAnswer<?> result = null;
                 try {
                     result = mc(entry.getKey(), property.getKey());
                 } catch (Exception e) {

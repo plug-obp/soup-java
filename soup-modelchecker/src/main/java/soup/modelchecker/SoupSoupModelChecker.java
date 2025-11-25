@@ -1,13 +1,16 @@
 package soup.modelchecker;
 
 import obp3.modelchecking.EmptinessCheckerAnswer;
+import obp3.modelchecking.EmptinessCheckerStatus;
 import obp3.modelchecking.tools.BuchiModelCheckerModel;
 import obp3.modelchecking.tools.ModelCheckerBuilder;
 import obp3.runtime.IExecutable;
 import obp3.runtime.sli.DependentSemanticRelation;
 import obp3.runtime.sli.SemanticRelation;
 import obp3.runtime.sli.Step;
+import obp3.sli.core.operators.product.Product;
 import obp3.traversal.dfs.DepthFirstTraversal;
+import obp3.utils.Either;
 import soup.semantics.base.Environment;
 import soup.semantics.base.SoupSemantics;
 import soup.semantics.dependent.SoupStepDependentSemantics;
@@ -67,7 +70,7 @@ public class SoupSoupModelChecker {
         return (boolean) evaluator.evaluate(acceptingPredicateExpression, c);
     }
 
-    IExecutable<?, EmptinessCheckerAnswer<?>> modelChecker() {
+    IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Either<Environment, Product<Environment, Environment>>>> modelChecker() {
         var builder =
                 new ModelCheckerBuilder<AnonymousPiece, Environment, AnonymousPiece, Environment>()
                     .modelSemantics(getModelSemantics())

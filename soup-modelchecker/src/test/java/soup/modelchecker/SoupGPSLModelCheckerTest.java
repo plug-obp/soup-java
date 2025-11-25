@@ -26,8 +26,8 @@ public class SoupGPSLModelCheckerTest {
     }
 
     @SuppressWarnings("unchecked")
-    EmptinessCheckerAnswer<Product<?,?>> mc(Soup model, String property) {
-        return (EmptinessCheckerAnswer<Product<?,?>>)SoupGPSLModelChecker.soupGPSLModelChecker(model, property).runAlone();
+    EmptinessCheckerAnswer<Product<Environment,State>> mc(Soup model, String property) {
+        return SoupGPSLModelChecker.soupGPSLModelChecker(model, property).runAlone();
     }
 
     final String exclusionPred = "p=! !|a==2 && b==2|";

@@ -1,9 +1,10 @@
 package soup.modelchecker;
 
-import gpsl.semantics.AutomatonSemantics;
 import obp3.modelchecking.EmptinessCheckerAnswer;
 import obp3.sli.core.operators.product.Product;
 import org.junit.jupiter.api.Test;
+import rege.syntax.model.Expression;
+import soup.semantics.base.Environment;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.Soup;
 
@@ -14,7 +15,6 @@ import java.text.ParseException;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MantrapSoupRegeTest {
     String modelPath = "../soup-models/mantrap/";
@@ -23,12 +23,11 @@ public class MantrapSoupRegeTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    @SuppressWarnings("unchecked")
-    EmptinessCheckerAnswer<Product<?,?>> mc(Soup model, String property) {
-        return (EmptinessCheckerAnswer<Product<?,?>>) SoupRegeModelChecker.soupRegeModelChecker(model, property).runAlone();
+    EmptinessCheckerAnswer<Product<Environment, Expression>> mc(Soup model, String property) {
+        return SoupRegeModelChecker.soupRegeModelChecker(model, property).runAlone();
     }
 
-    EmptinessCheckerAnswer<Product<?,?>> mc(String modelName, String property) throws IOException, ParseException {
+    EmptinessCheckerAnswer<Product<Environment,Expression>> mc(String modelName, String property) throws IOException, ParseException {
         var model = readSoup(modelName);
         return mc(model, property);
     }
@@ -116,7 +115,7 @@ public class MantrapSoupRegeTest {
         for (var entry : models2properties.entrySet()) {
             for (var property : entry.getValue().entrySet()) {
                 var propName = "'" + property.getKey() + "'";
-                EmptinessCheckerAnswer<Product<?,?>> result = null;
+                EmptinessCheckerAnswer<Product<Environment,Expression>> result = null;
                 try {
                     result = mc(entry.getKey(), property.getKey());
                 } catch (Exception e){

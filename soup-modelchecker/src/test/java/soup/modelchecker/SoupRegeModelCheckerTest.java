@@ -1,8 +1,13 @@
 package soup.modelchecker;
 
 import obp3.modelchecking.EmptinessCheckerAnswer;
+import obp3.modelchecking.EmptinessCheckerStatus;
 import obp3.runtime.IExecutable;
+import obp3.sli.core.operators.product.Product;
+import obp3.utils.Either;
 import org.junit.jupiter.api.Test;
+import rege.syntax.model.Expression;
+import soup.semantics.base.Environment;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.Soup;
 
@@ -20,7 +25,7 @@ public class SoupRegeModelCheckerTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    IExecutable<?, EmptinessCheckerAnswer<?>> mc(Soup model, String property) {
+    IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Product<Environment, Expression>>> mc(Soup model, String property) {
         return SoupRegeModelChecker.soupRegeModelChecker(model, property);
     }
 

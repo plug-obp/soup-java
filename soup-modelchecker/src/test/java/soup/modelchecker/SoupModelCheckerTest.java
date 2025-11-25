@@ -1,9 +1,13 @@
 package soup.modelchecker;
 
 import obp3.modelchecking.EmptinessCheckerAnswer;
+import obp3.modelchecking.EmptinessCheckerStatus;
 import obp3.runtime.IExecutable;
+import obp3.sli.core.operators.product.Product;
 import obp3.traversal.dfs.DepthFirstTraversal;
+import obp3.utils.Either;
 import org.junit.jupiter.api.Test;
+import soup.semantics.base.Environment;
 import soup.syntax.Reader;
 import soup.syntax.model.declarations.Soup;
 import soup.syntax.model.expressions.Expression;
@@ -17,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SoupModelCheckerTest {
     String modelPath = "../soup-models/alice-bob/";
-    IExecutable<?, EmptinessCheckerAnswer<?>> predicateMC(Soup model, Expression predicate) {
+    IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Either<Environment, Product<Environment, Environment>>>> predicateMC(Soup model, Expression predicate) {
         var soupModelChecker = new SoupSoupModelChecker(
                 model,
                 null,
@@ -32,7 +36,7 @@ public class SoupModelCheckerTest {
         return Reader.readSoup(new BufferedReader(new FileReader(modelPath + modelName)));
     }
 
-    IExecutable<?, EmptinessCheckerAnswer<?>> mc(Soup model, Soup property, Expression predicate, boolean isBuchi) {
+    IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Either<Environment, Product<Environment, Environment>>>> mc(Soup model, Soup property, Expression predicate, boolean isBuchi) {
         var soupModelChecker = new SoupSoupModelChecker(
                 model,
                 property,
@@ -42,11 +46,11 @@ public class SoupModelCheckerTest {
                 -1);
         return soupModelChecker.modelChecker();
     }
-    IExecutable<?, EmptinessCheckerAnswer<?>> safetyMc(Soup model, Soup property, Expression predicate) {
+    IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Either<Environment, Product<Environment, Environment>>>> safetyMc(Soup model, Soup property, Expression predicate) {
         return mc(model, property, predicate, false);
     }
 
-    IExecutable<?, EmptinessCheckerAnswer<?>> buchiMc(Soup model, Soup property, Expression predicate) {
+    IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Either<Environment, Product<Environment, Environment>>>> buchiMc(Soup model, Soup property, Expression predicate) {
         return mc(model, property, predicate, true);
     }
 

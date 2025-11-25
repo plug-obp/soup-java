@@ -1,9 +1,12 @@
 package soup.modelchecker;
 
 import gpsl.modelchecker.StepModelChecker;
+import gpsl.syntax.model.State;
 import obp3.modelchecking.EmptinessCheckerAnswer;
+import obp3.modelchecking.EmptinessCheckerStatus;
 import obp3.runtime.IExecutable;
 import obp3.runtime.sli.Step;
+import obp3.sli.core.operators.product.Product;
 import soup.semantics.base.Environment;
 import soup.semantics.base.SoupSemantics;
 import soup.semantics.diagnosis.StepEnvironment;
@@ -13,7 +16,7 @@ import soup.syntax.model.declarations.pieces.AnonymousPiece;
 
 public class SoupGPSLModelChecker {
 
-    public static IExecutable<?, EmptinessCheckerAnswer<?>> soupGPSLModelChecker(
+    public static IExecutable<EmptinessCheckerStatus, EmptinessCheckerAnswer<Product<Environment, State>>> soupGPSLModelChecker(
             Soup modelSoup,
             String property) {
         var checker = new StepModelChecker<>(
