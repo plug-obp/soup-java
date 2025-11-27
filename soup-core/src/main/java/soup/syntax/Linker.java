@@ -16,6 +16,7 @@ import soup.syntax.model.statements.Sequence;
 
 public class Linker extends FunctionalVisitorBase<Environment, Void> {
     @Override
+    @SuppressWarnings({"rawtypes"})
     public Void visit(Reference node, Environment input) {
         if (node.declaration != null) return null;
         node.declaration = input.variableScope.get(node.name);
